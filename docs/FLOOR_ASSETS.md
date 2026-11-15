@@ -39,7 +39,7 @@ python3 Game/Assets/Project/Environment/SourceTools/generate_map.py
 
 The map script requires matplotlib. Open `Game/` using Unity 6000.6.8f1 and choose **Temporal Contract > Floor > Build Environment Assets**. Alternatively run `-batchmode -nographics -quit -projectPath <Game> -executeMethod TemporalContract.Environment.EditorTools.FloorAssetBuilder.BuildAll`.
 
-The builder edits only environment-owned assets. It never runs teammates' prefab builders. Source image paths refer to missing files on other machines; eight shared URP materials deliberately replace these unavailable textures. No source image dependency remains. Imported model colliders are disabled; the scene uses simple room/floor/bench/door box colliders. Keep the ambient light when binding room switches. Dynamic shadows are disabled in the preparation scene.
+The builder edits only environment-owned assets. It never runs teammates' prefab builders. Source image paths refer to missing files on other machines; eight shared URP materials deliberately replace these unavailable textures. No source image dependency remains. The supplied roof sheets have upward-facing normals, so the shared ceiling material renders both sides to remain visible from inside classrooms. Imported model colliders are disabled; the scene uses simple room/floor/bench/door box colliders. Keep the ambient light when binding room switches. Dynamic shadows are disabled in the preparation scene.
 
 ## Independent test
 

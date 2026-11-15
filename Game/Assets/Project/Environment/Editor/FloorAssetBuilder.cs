@@ -65,6 +65,8 @@ namespace TemporalContract.Environment.EditorTools
                 }
                 material.SetColor("_BaseColor",pair.Value);
                 material.SetFloat("_Smoothness",.15f);
+                // The supplied roof sheets face upward; render the ceiling from inside the rooms too.
+                material.SetFloat("_Cull",pair.Key=="Ceiling"?0f:2f);
                 EditorUtility.SetDirty(material);
             }
             AssetDatabase.SaveAssets();
@@ -217,6 +219,7 @@ namespace TemporalContract.Environment.EditorTools
             var anchors=UnityEngine.Object.FindFirstObjectByType<FloorIntegrationAnchors>();
             if(anchors==null||anchors.rooms.Length!=4)throw new InvalidOperationException("Missing floor room anchors.");
             if(anchors.boardMap==null)throw new InvalidOperationException("Board map is missing.");
+            if(AssetDatabase.LoadAssetAtPath<Material>(Root+"/Materials/Floor3_Ceiling.mat").GetFloat("_Cull")!=0f)throw new InvalidOperationException("Source ceiling sheets must render their interior face.");
             if(UnityEngine.Object.FindObjectsByType<TextMesh>(FindObjectsSortMode.None).Any(t=>t.font==null))throw new InvalidOperationException("A room/route sign has no font.");
             foreach(var room in anchors.rooms)
             {
