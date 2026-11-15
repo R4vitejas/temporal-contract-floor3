@@ -25,6 +25,7 @@ The FBX importer initially reverses the horizontal axes. `FloorAssetBuilder` mea
 - `Game/Assets/Project/Environment/Models/`: selected-section FBX, four separate source door FBXs, base-pivot source chair FBX. All tracked in Git LFS.
 - `Environment/Prefabs/Floor3Environment.prefab`: environment geometry, primitive collision boxes, room lighting, static door visuals and integration anchors. Contains no networking, combat, HUD, or test player.
 - `Environment/Scenes/EnvironmentTest.unity`: independent walkthrough, with doors fixed open for collision inspection.
+- `Environment/Data/Floor3UnityPreview.png`: actual 1280x720 standalone Intel-GPU screenshot of the environment inspection build.
 - `Environment/Data/Floor3Map.png`: labelled layout for Sanjana's board. It describes the selected section, not the entire building. Green lines mark boards/doors and coral lines mark blocked routes.
 - `Environment/Runtime/FloorIntegrationAnchors.cs`: scene-owned references only; it grants no gameplay authority.
 
@@ -39,7 +40,7 @@ python3 Game/Assets/Project/Environment/SourceTools/generate_map.py
 
 The map script requires matplotlib. Open `Game/` using Unity 6000.6.8f1 and choose **Temporal Contract > Floor > Build Environment Assets**. Alternatively run `-batchmode -nographics -quit -projectPath <Game> -executeMethod TemporalContract.Environment.EditorTools.FloorAssetBuilder.BuildAll`.
 
-The builder edits only environment-owned assets. It never runs teammates' prefab builders. Source image paths refer to missing files on other machines; eight shared URP materials deliberately replace these unavailable textures. No source image dependency remains. Imported model colliders are disabled; the scene uses simple room/floor/bench/door box colliders. Keep the ambient light when binding room switches. Dynamic shadows are disabled in the preparation scene.
+The builder edits only environment-owned assets. It never runs teammates' prefab builders. Source image paths refer to missing files on other machines; eight shared URP materials deliberately replace these unavailable textures. No source image dependency remains. The supplied roof sheets have upward-facing normals, so the shared ceiling material renders both sides to remain visible from inside classrooms. Imported model colliders are disabled; the scene uses simple room/floor/bench/door box colliders. Keep the ambient light when binding room switches. Dynamic shadows are disabled in the preparation scene.
 
 ## Independent test
 
@@ -71,6 +72,6 @@ git lfs pull
 git lfs fsck
 ```
 
-A fresh-clone retrieval check is recorded in the PR after upload. Each teammate still needs Git LFS on their machine. Do not add the original Blender/OBJ sources, builds or recordings to ordinary Git.
+Fresh remote clone retrieval passed on `6991dd1` after configuring Git LFS: all seven binary assets were downloaded and matched SHA-256; `git lfs fsck` passed. Each teammate still needs Git LFS on their machine. Do not add the original Blender/OBJ sources, builds or recordings to ordinary Git.
 
 Unity 6000.6.8f1 import/compilation and the generated environment checks passed (exit 0): four clear doorways, three supported/unoccupied anchors, zero missing scripts, 46,037 rendered triangles and 68 colliders. `Data/Floor3Preview.png` is a Blender cutaway render of the exported geometry, not a Unity gameplay screenshot. No frame-rate or two-laptop claim is made: measure the standalone integrated game at 1280x720 on the weaker demo laptop. The current machine is an Intel Core i3-1005G1 / Iris Plus G1 with approximately 16 GB RAM on Ubuntu 24.04.5; the second laptop is not yet identified. This issue remains open until the visual walkthrough and remaining acceptance evidence are accepted.

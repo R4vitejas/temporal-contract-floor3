@@ -65,6 +65,8 @@ namespace TemporalContract.Environment.EditorTools
                 }
                 material.SetColor("_BaseColor",pair.Value);
                 material.SetFloat("_Smoothness",.15f);
+                // The supplied roof sheets face upward; render the ceiling from inside the rooms too.
+                material.SetFloat("_Cull",pair.Key=="Ceiling"?0f:2f);
                 EditorUtility.SetDirty(material);
             }
             AssetDatabase.SaveAssets();
@@ -102,7 +104,8 @@ namespace TemporalContract.Environment.EditorTools
             // Clear one source bench from the documented VIP anchor, retaining the other classroom furniture.
             var vipBench=geometry.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name=="Source_Shorter.029");
             if(vipBench!=null)vipBench.gameObject.SetActive(false);
-            GameObjectUtility.SetStaticEditorFlags(geometry,StaticEditorFlags.BatchingStatic|StaticEditorFlags.OccluderStatic|StaticEditorFlags.OccludeeStatic);
+            foreach(var child in geometry.GetComponentsInChildren<Transform>(true))
+                GameObjectUtility.SetStaticEditorFlags(child.gameObject,StaticEditorFlags.BatchingStatic|StaticEditorFlags.OccluderStatic|StaticEditorFlags.OccludeeStatic);
             var collision=new GameObject("Simple Static Colliders").transform;collision.SetParent(root.transform,false);
             Box(collision,"Corridor floor",Source(43.29f,-7.25f,-.065f),new Vector3(17.62f,.1f,14.94f));
             anchors.rooms=new FloorIntegrationAnchors.Room[4];
@@ -131,7 +134,7 @@ namespace TemporalContract.Environment.EditorTools
                 string boardName= i==0?"Source_Plane.043": i==1?"Source_Plane.044": i==2?"Source_Plane.046":"Source_Plane.045";
                 var board=geometry.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name==boardName);
                 anchors.rooms[i]=new FloorIntegrationAnchors.Room{sourceRoom=RoomIds[i],label=i==2?"Classroom 06 - VIP":RoomIds[i].Replace("ClassRoom","Classroom "),doorHinge=hinge,board=board,roomLight=light,restricted=i==2};
-                Sign(root.transform,anchors.rooms[i].label,Source(DoorX[i],DoorY[i]+(north?-.13f:.13f),2.4f),north?180f:0f,.12f);
+                Sign(root.transform,anchors.rooms[i].label,Source(centerX,DoorY[i]+(north?-.13f:.13f),2.4f),north?0f:180f,.04f);
             }
             // Bench/platform bounds are simple boxes; windows are blocked by room perimeter boxes.
             foreach(var renderer in geometry.GetComponentsInChildren<Renderer>())
@@ -178,13 +181,16 @@ namespace TemporalContract.Environment.EditorTools
             var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name=name;go.transform.SetParent(parent,false);
             go.transform.localPosition=position;go.transform.localScale=size;
             go.GetComponent<Renderer>().sharedMaterial=AssetDatabase.LoadAssetAtPath<Material>(Root+"/Materials/Floor3_Wood.mat");
-            Sign(parent,name.ToUpperInvariant(),position+Vector3.up*.4f,90f,.13f);
+            bool west=name.StartsWith("West",StringComparison.Ordinal);
+            Sign(parent,name.ToUpperInvariant(),position+Vector3.up*.4f+(west?Vector3.right:Vector3.left)*(size.x*.5f+.02f),west?-90f:90f,.04f);
         }
         private static void Sign(Transform parent,string text,Vector3 position,float yaw,float scale)
         {
             var go=new GameObject("Sign_"+text);go.transform.SetParent(parent,false);go.transform.localPosition=position;
             go.transform.localRotation=Quaternion.Euler(0f,yaw,0f);
             var mesh=go.AddComponent<TextMesh>();mesh.text=text;mesh.anchor=TextAnchor.MiddleCenter;mesh.alignment=TextAlignment.Center;
+            mesh.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            go.GetComponent<MeshRenderer>().sharedMaterial=mesh.font.material;
             mesh.fontSize=64;mesh.characterSize=scale;mesh.color=new Color(.1f,.15f,.17f);
         }
         public static void ConfigureLighting()
@@ -213,6 +219,8 @@ namespace TemporalContract.Environment.EditorTools
             var anchors=UnityEngine.Object.FindFirstObjectByType<FloorIntegrationAnchors>();
             if(anchors==null||anchors.rooms.Length!=4)throw new InvalidOperationException("Missing floor room anchors.");
             if(anchors.boardMap==null)throw new InvalidOperationException("Board map is missing.");
+            if(AssetDatabase.LoadAssetAtPath<Material>(Root+"/Materials/Floor3_Ceiling.mat").GetFloat("_Cull")!=0f)throw new InvalidOperationException("Source ceiling sheets must render their interior face.");
+            if(UnityEngine.Object.FindObjectsByType<TextMesh>(FindObjectsSortMode.None).Any(t=>t.font==null))throw new InvalidOperationException("A room/route sign has no font.");
             foreach(var room in anchors.rooms)
             {
                 if(room.board==null||room.roomLight==null)throw new InvalidOperationException("Missing board/light: "+room.sourceRoom);

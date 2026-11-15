@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,15 +14,73 @@ namespace TemporalContract.Environment.Testing
         private CharacterController body;
         private float pitch;
         private float verticalSpeed;
+        private bool automated;
         private readonly Vector3 start = new Vector3(-2.5f, .05f, 0f);
         private void Awake()
         {
             body = GetComponent<CharacterController>();
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            var args=System.Environment.GetCommandLineArgs();
+            automated=Array.IndexOf(args,"--floor-smoke-test")>=0||Array.IndexOf(args,"--floor-production-capsule-test")>=0;
+            Cursor.lockState = automated?CursorLockMode.None:CursorLockMode.Locked;
+            Cursor.visible = automated;
+        }
+        private void Start()
+        {
+            var args=System.Environment.GetCommandLineArgs();
+            bool productionSize=Array.IndexOf(args,"--floor-production-capsule-test")>=0;
+            if(productionSize){body.radius=.5f;body.height=2f;body.center=Vector3.up;}
+            if(productionSize||Array.IndexOf(args,"--floor-smoke-test")>=0)
+                StartCoroutine(CheckStandaloneTraversal());
+        }
+        private IEnumerator CheckStandaloneTraversal()
+        {
+            yield return new WaitForFixedUpdate();
+            string screenshot=System.Environment.GetEnvironmentVariable("FLOOR_SCREENSHOT_OUTPUT");
+            if(!string.IsNullOrEmpty(screenshot)&&SystemInfo.graphicsDeviceType!=UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                body.enabled=false;transform.position=new Vector3(4f,.05f,-8f);body.enabled=true;
+                transform.rotation=Quaternion.LookRotation(new Vector3(-7f,0f,9f));
+                yield return new WaitForEndOfFrame();
+                bool captureFailed=false;
+                try
+                {
+                    var captured=ScreenCapture.CaptureScreenshotAsTexture();
+                    System.IO.File.WriteAllBytes(screenshot,captured.EncodeToPNG());
+                    UnityEngine.Object.Destroy(captured);
+                }
+                catch(Exception error){Debug.LogException(error);Application.Quit(1);captureFailed=true;}
+                if(captureFailed)yield break;
+            }
+            try
+            {
+                Physics.SyncTransforms();
+                var anchors=UnityEngine.Object.FindFirstObjectByType<FloorIntegrationAnchors>();
+                if(anchors==null||anchors.rooms.Length!=4||anchors.boardMap==null)
+                    throw new InvalidOperationException("Missing standalone floor references.");
+                if(UnityEngine.Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Count(a=>a.enabled)!=1)
+                    throw new InvalidOperationException("The walkthrough must have one active listener.");
+                foreach(var room in anchors.rooms)
+                {
+                    if(room.board==null||room.roomLight==null)throw new InvalidOperationException("Missing room binding.");
+                    bool north=room.sourceRoom=="ClassRoom06"||room.sourceRoom=="ClassRoom05";
+                    var direction=north?Vector3.forward:Vector3.back;
+                    var threshold=room.doorHinge.position+new Vector3(.46707f,.03f,0f);
+                    body.enabled=false;transform.position=threshold-direction;body.enabled=true;
+                    for(int step=0;step<40;step++)body.Move(direction*.05f);
+                    if(Vector3.Distance(transform.position,threshold+direction)>.15f)
+                        throw new InvalidOperationException("Standalone traversal blocked: "+room.sourceRoom);
+                }
+                Debug.Log($"FLOOR_STANDALONE_SMOKE_PASS: four doorways traversed; controller height={body.height:F2} radius={body.radius:F2}; room/map/listener references valid.");
+                Application.Quit(0);
+            }
+            catch(Exception error)
+            {
+                Debug.LogException(error);Application.Quit(1);
+            }
         }
         private void Update()
         {
+            if(automated)return;
             var keys = Keyboard.current;
             var mouse = Mouse.current;
             if (keys == null || mouse == null) return;
