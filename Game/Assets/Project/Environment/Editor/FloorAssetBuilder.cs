@@ -132,7 +132,7 @@ namespace TemporalContract.Environment.EditorTools
                 string boardName= i==0?"Source_Plane.043": i==1?"Source_Plane.044": i==2?"Source_Plane.046":"Source_Plane.045";
                 var board=geometry.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name==boardName);
                 anchors.rooms[i]=new FloorIntegrationAnchors.Room{sourceRoom=RoomIds[i],label=i==2?"Classroom 06 - VIP":RoomIds[i].Replace("ClassRoom","Classroom "),doorHinge=hinge,board=board,roomLight=light,restricted=i==2};
-                Sign(root.transform,anchors.rooms[i].label,Source(DoorX[i],DoorY[i]+(north?-.13f:.13f),2.4f),north?0f:180f,.12f);
+                Sign(root.transform,anchors.rooms[i].label,Source(centerX,DoorY[i]+(north?-.13f:.13f),2.4f),north?0f:180f,.04f);
             }
             // Bench/platform bounds are simple boxes; windows are blocked by room perimeter boxes.
             foreach(var renderer in geometry.GetComponentsInChildren<Renderer>())
@@ -180,7 +180,7 @@ namespace TemporalContract.Environment.EditorTools
             go.transform.localPosition=position;go.transform.localScale=size;
             go.GetComponent<Renderer>().sharedMaterial=AssetDatabase.LoadAssetAtPath<Material>(Root+"/Materials/Floor3_Wood.mat");
             bool west=name.StartsWith("West",StringComparison.Ordinal);
-            Sign(parent,name.ToUpperInvariant(),position+Vector3.up*.4f+(west?Vector3.right:Vector3.left)*(size.x*.5f+.02f),west?-90f:90f,.13f);
+            Sign(parent,name.ToUpperInvariant(),position+Vector3.up*.4f+(west?Vector3.right:Vector3.left)*(size.x*.5f+.02f),west?-90f:90f,.04f);
         }
         private static void Sign(Transform parent,string text,Vector3 position,float yaw,float scale)
         {

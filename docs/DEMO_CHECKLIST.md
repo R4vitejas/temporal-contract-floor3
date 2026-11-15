@@ -46,6 +46,14 @@ Windows build support is not installed in the current local Editor. If Laptop B 
 
 Do not commit Builds or recordings to ordinary Git. Preserve the frozen source commit, full build directory, manifest and final video together in the team's agreed shared storage. Add usable shared links here once available.
 
+## Preparation evidence
+
+The environment-only Linux development build succeeded on Unity 6000.6.8f1. Its standalone headless check traversed all four doors with a 1.8 m / radius 0.3 m CharacterController, validated room/map/listener references and exited 0. One short run took 3.59 s with peak resident memory 182,480 KiB (about 178 MiB). This includes startup and teardown, uses no graphics device and says nothing about sustained gameplay FPS.
+
+A graphical 1280x720 run on the local Intel GPU also completed the geometry check and produced a Unity screenshot. Materials and the supplied geometry were visually checked. It was not a timed performance run or multiplayer test.
+
+**Concrete pending handoff:** repeating the same standalone geometry proxy at the current network player's dimensions (2 m tall / radius 0.5 m) failed at Classroom 02, exit 1. Samatma and Ravitejas must agree capsule/door clearance and verify the actual production player. This result is not hidden or labelled complete; Main assembly requires explicit capsule-fit acceptance.
+
 ## Acceptance matrix
 
 For every row record source/build, tester, which laptop hosted, what each instance observed and evidence. Repeat actions initiated by both host and client.
