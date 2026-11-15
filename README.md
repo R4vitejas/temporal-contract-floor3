@@ -27,3 +27,5 @@ This repository initially contains planning and handoff documents only. The Unit
 ## Demo
 
 Two laptops, each with keyboard and mouse. One hosts; the other joins its LAN IP. Test on one laptop using two instances during development, then verify the actual two-laptop connection. Internet matchmaking and join codes are not required for the MVP.
+
+(adhi was here)
