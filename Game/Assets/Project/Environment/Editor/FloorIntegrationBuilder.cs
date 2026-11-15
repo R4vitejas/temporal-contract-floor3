@@ -76,6 +76,7 @@ namespace TemporalContract.Environment.EditorTools
             var config=AssetDatabase.LoadAssetAtPath<FloorAssemblyConfig>(ConfigPath);
             if(config==null||!config.subsystemReviewsAccepted)
                 throw new InvalidOperationException("Accept the subsystem PRs and record their source commits in FloorAssemblyConfig before assembly.");
+            if(!config.productionCapsuleFitVerified)throw new InvalidOperationException("Verify the actual production player capsule against the source doorways before assembly.");
             if(config.presentationPrefab==null||!config.presentationBindingsVerified)
                 throw new InvalidOperationException("Assign Sanjana's reviewed presentation prefab and verify its documented board/HUD/feedback bindings first.");
             if(string.IsNullOrWhiteSpace(config.networkCommit)||string.IsNullOrWhiteSpace(config.interactionCommit)||string.IsNullOrWhiteSpace(config.presentationCommit))
@@ -164,7 +165,7 @@ namespace TemporalContract.Environment.EditorTools
         public static void ValidateProductionScene()
         {
             var config=AssetDatabase.LoadAssetAtPath<FloorAssemblyConfig>(ConfigPath);
-            if(config==null||!config.subsystemReviewsAccepted||!config.presentationBindingsVerified||config.presentationPrefab==null)
+            if(config==null||!config.subsystemReviewsAccepted||!config.productionCapsuleFitVerified||!config.presentationBindingsVerified||config.presentationPrefab==null)
                 throw new InvalidOperationException("Subsystem/presentation acceptance is not recorded.");
             int managers=0,doors=0,cards=0,panels=0,covers=0;
             foreach(var component in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))

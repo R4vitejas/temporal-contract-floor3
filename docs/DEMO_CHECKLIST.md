@@ -36,7 +36,9 @@ User-selected network plan: hotspot. Record the actual hotspot device, host IPv4
 
 ## Builds
 
-**Environment inspection build:** choose **Temporal Contract > Floor > Build Linux Environment Walkthrough**. Output: `Builds/Floor3-environment-only-Linux/`. This is a development build of EnvironmentTest, with fixed-open doors and a test controller. It is not the multiplayer demo.
+**Environment inspection build:** choose **Temporal Contract > Floor > Build Linux Environment Walkthrough**. Output: `Builds/Floor3-environment-only-Linux/`. It defaults to a 1280x720 window. This is a development build of EnvironmentTest, with fixed-open doors and a test controller. It is not the multiplayer demo.
+
+Run its automated headless geometry check on Ubuntu with `./Floor3.x86_64 -batchmode -nographics --floor-smoke-test -logFile smoke.log`. The `--floor-production-capsule-test` option repeats the same traversal using the current network prefab's 2 m / radius 0.5 m capsule dimensions. These are geometry checks, not the real network player or GPU/performance tests.
 
 **Integrated candidate:** after the reviewed Main assembly and clean source commit, choose **Temporal Contract > Floor > Build Linux Integrated Release Candidate**. Output: `Builds/Floor3-integrated-candidate-Linux/`. The build command checks scene readiness, records source commit/Unity version/target, executable hash and working-tree state. It does not mark any gameplay acceptance row passed.
 

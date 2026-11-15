@@ -5,6 +5,7 @@ namespace TemporalContract.Environment
     public sealed class FloorAssemblyConfig : ScriptableObject
     {
         public bool subsystemReviewsAccepted;
+        public bool productionCapsuleFitVerified;
         public string networkCommit;
         public string interactionCommit;
         public string presentationCommit;

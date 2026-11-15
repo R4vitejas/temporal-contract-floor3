@@ -31,8 +31,21 @@ namespace TemporalContract.Environment.EditorTools
             if(kind=="integrated-candidate"&&dirty)throw new InvalidOperationException("Commit the reviewed release source before building a reproducible candidate.");
             string directory=Path.Combine(repo,"Builds","Floor3-"+kind+"-Linux");Directory.CreateDirectory(directory);
             string executable=Path.Combine(directory,"Floor3.x86_64");
-            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scene},locationPathName=executable,
-                target=BuildTarget.StandaloneLinux64,options=options});
+            int oldWidth=PlayerSettings.defaultScreenWidth,oldHeight=PlayerSettings.defaultScreenHeight;
+            var oldMode=PlayerSettings.fullScreenMode;
+            BuildReport report;
+            try
+            {
+                PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=720;
+                PlayerSettings.fullScreenMode=FullScreenMode.Windowed;
+                report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scene},locationPathName=executable,
+                    target=BuildTarget.StandaloneLinux64,options=options});
+            }
+            finally
+            {
+                PlayerSettings.defaultScreenWidth=oldWidth;PlayerSettings.defaultScreenHeight=oldHeight;
+                PlayerSettings.fullScreenMode=oldMode;
+            }
             if(report.summary.result!=BuildResult.Succeeded)throw new InvalidOperationException("Linux build failed: "+report.summary.result);
             string hash;using(var stream=File.OpenRead(executable))using(var sha=SHA256.Create())hash=BitConverter.ToString(sha.ComputeHash(stream)).Replace("-","").ToLowerInvariant();
             string commit=GitOutput(repo,"rev-parse HEAD");
