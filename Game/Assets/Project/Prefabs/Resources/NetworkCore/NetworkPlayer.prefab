@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 4168592422791100770}
   - component: {fileID: 5559296583744581315}
   - component: {fileID: 3172848676355577797}
+  - component: {fileID: 5043584142708375451}
+  - component: {fileID: 4103810118827179824}
   - component: {fileID: 8203105326770320730}
   m_Layer: 0
   m_Name: NetworkPlayer
@@ -154,6 +156,39 @@ MonoBehaviour:
   moveSpeed: 4.5
   mouseSensitivity: 0.12
   jumpHeight: 1.15
+--- !u!114 &5043584142708375451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896976078723853523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 296e07a4bb084784293a23c61cb01887, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Combat.NetworkPlayerHealth
+  ShowTopMostFoldoutHeaderGroup: 1
+  maximumHealth: 100
+--- !u!114 &4103810118827179824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896976078723853523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1440a91476c0f5c46ab1ba6df1be895d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Combat.NetworkHitscanWeapon
+  ShowTopMostFoldoutHeaderGroup: 1
+  magazineSize: 12
+  damage: 25
+  fireInterval: 0.25
+  reloadDuration: 1.5
+  range: 100
+  maximumAimPitch: 85
 --- !u!114 &8203105326770320730
 MonoBehaviour:
   m_ObjectHideFlags: 0

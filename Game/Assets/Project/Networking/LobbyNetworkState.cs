@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using TemporalContract.Rounds;
 using Unity.Netcode;
 
 namespace TemporalContract.Networking
@@ -10,9 +11,12 @@ namespace TemporalContract.Networking
         private readonly NetworkList<ulong> readyClientIds = new NetworkList<ulong>();
         private readonly NetworkVariable<bool> matchStarted = new NetworkVariable<bool>(
             false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<ulong> attackerClientId = new NetworkVariable<ulong>(
+            0UL, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         public static LobbyNetworkState Instance { get; private set; }
         public bool MatchStarted => matchStarted.Value;
+        public ulong AttackerClientId => attackerClientId.Value;
         public int ReadyCount => readyClientIds.Count;
         public event Action StateChanged;
 
@@ -43,6 +47,15 @@ namespace TemporalContract.Networking
         }
 
         public bool IsReady(ulong clientId) => readyClientIds.Contains(clientId);
+        public bool IsAttacker(ulong clientId) => attackerClientId.Value == clientId;
+
+        public void SetAttackerClientId(ulong clientId)
+        {
+            if (IsServer && NetworkManager.ConnectedClientsIds.Contains(clientId))
+            {
+                attackerClientId.Value = clientId;
+            }
+        }
 
         public void SetLocalReady(bool ready)
         {
@@ -70,7 +83,9 @@ namespace TemporalContract.Networking
             {
                 return false;
             }
+            attackerClientId.Value = NetworkManager.ServerClientId;
             matchStarted.Value = true;
+            RoundCoordinator.Instance?.BeginMatch();
             StateChanged?.Invoke();
             return true;
         }
