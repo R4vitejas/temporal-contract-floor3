@@ -25,6 +25,15 @@ namespace TemporalContract.Networking
 
         public event Action<InteractionPrompt> PromptChanged;
 
+        public void Configure(Camera camera, MonoBehaviour actorComponent, MonoBehaviour inputCaptureComponent)
+        {
+            playerCamera = camera;
+            this.actorComponent = actorComponent;
+            this.inputCaptureComponent = inputCaptureComponent;
+            actor = actorComponent as IInteractionActor;
+            inputCapture = inputCaptureComponent as IGameplayInputCapture;
+        }
+
         private void Awake()
         {
             actor = actorComponent as IInteractionActor;
