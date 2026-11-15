@@ -105,6 +105,15 @@ namespace TemporalContract.Interactions.Testing
                 Cursor.lockState = CursorLockMode.Locked;
             }
 
+            if (Keyboard.current.rKey.wasPressedThisFrame)
+            {
+                TestActionRpc(0);
+            }
+            else if (Keyboard.current.kKey.wasPressedThisFrame)
+            {
+                TestActionRpc(1);
+            }
+
             if (Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 look = Mouse.current.delta.ReadValue() * lookSensitivity;
@@ -123,6 +132,31 @@ namespace TemporalContract.Interactions.Testing
             Vector3 velocity = (transform.right * move.x + transform.forward * move.y).normalized * moveSpeed;
             velocity.y = verticalVelocity;
             controller.Move(velocity * Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Test hooks standing in for Samatma's round/combat code. 0 = round reset for every
+        /// interaction (R). 1 = simulate this player dying while holding cover (K).
+        /// Executed on the host only.
+        /// </summary>
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        private void TestActionRpc(int action, RpcParams rpcParams = default)
+        {
+            if (action == 0)
+            {
+                var context = new RoundResetContext(0, 0);
+                foreach (NetworkInteractable interactable in FindObjectsByType<NetworkInteractable>(FindObjectsSortMode.None))
+                {
+                    interactable.ResetForRound(context);
+                }
+            }
+            else if (action == 1)
+            {
+                foreach (MovableCover cover in FindObjectsByType<MovableCover>(FindObjectsSortMode.None))
+                {
+                    cover.ReleaseIfHeldBy(rpcParams.Receive.SenderClientId);
+                }
+            }
         }
 
         private void OnPromptChanged(InteractionPrompt prompt)
@@ -151,7 +185,7 @@ namespace TemporalContract.Interactions.Testing
             GUI.Label(new Rect(Screen.width / 2f - 150f, Screen.height / 2f + 20f, 300f, 24f), promptText);
             GUI.Label(new Rect(Screen.width / 2f - 4f, Screen.height / 2f - 10f, 20f, 20f), "+");
             GUI.Label(new Rect(10f, 10f, 420f, 24f),
-                $"TEST PLAYER  client {OwnerClientId}  (Esc frees cursor, click to recapture)");
+                $"TEST PLAYER  client {OwnerClientId}  (Esc frees cursor, click recaptures, R = round reset, K = drop held cover as if dead)");
             int y = 34;
             foreach (string line in feedbackLog)
             {
