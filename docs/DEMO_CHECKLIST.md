@@ -42,6 +42,8 @@ Run its automated headless geometry check on Ubuntu with `./Floor3.x86_64 -batch
 
 **Integrated candidate:** after the reviewed Main assembly and clean source commit, choose **Temporal Contract > Floor > Build Linux Integrated Release Candidate**. Output: `Builds/Floor3-integrated-candidate-Linux/`. The build command checks scene readiness, records source commit/Unity version/target, executable hash and working-tree state. It does not mark any gameplay acceptance row passed.
 
+The current Editor normalizes shared Core metadata and local SDK/URP settings during import/build. Those automatic changes were kept out of the floor PRs; agree the shared package/metadata/settings state with Samatma before the clean-source release freeze. The environment development manifest records its dirty import state honestly.
+
 Windows build support is not installed in the current local Editor. If Laptop B uses Windows, arrange the matching Windows module or build the same accepted commit on a teammate's configured Windows Editor. Keep Unity and package versions agreed across the team.
 
 After building, package and checksum the entire directory (the executable alone is only Unity's launcher):

@@ -12,7 +12,7 @@
 
 Ravitejas explicitly authorized #12–#14 on November 15, 2026.
 
-- Floor PR #18 (`feature/floor-assets`, `6991dd1`) selects source Classrooms 02/03/05/06 and their corridor, retaining supplied architecture/boards/windows/doors/chair. A labelled map and cutaway preview are included.
+- Floor PR #18 (`feature/floor-assets`, `f9e794c`) selects source Classrooms 02/03/05/06 and their corridor, retaining supplied architecture/boards/windows/doors/chair. A labelled map and cutaway preview are included.
 - Unity import/compilation and static geometry checks passed: four clear doorways, three supported/unoccupied anchors, zero missing scripts, 46,037 rendered triangles and 68 colliders. Fresh remote clone/LFS retrieval passed with all seven binary assets matching SHA-256. Interactive walkthrough and actual hardware performance are not claimed.
 - `feature/floor-integration` prepares Main with environment geometry/anchors and no test controller. Main stays disabled in Build Settings until reviewed production assembly; this is not the complete playable game.
 - Production assembly needs accepted networking/round/interaction prefabs and Sanjana's documented presentation binder. Setup: [FLOOR_INTEGRATION.md](FLOOR_INTEGRATION.md). No teammate implementation is replaced or silently modified.
