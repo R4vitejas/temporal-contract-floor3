@@ -7,9 +7,9 @@ Two-player desktop LAN game built around environmental interactions in the suppl
 1. Read [the project brief](docs/PROJECT_BRIEF.md).
 2. Read [the team workflow](CONTRIBUTING.md).
 3. Read your task brief: [Ravitejas](docs/tasks/RAVITEJAS.md), [Samatma](docs/tasks/SAMATMA.md), [Sanjana](docs/tasks/SANJANA.md), [Adhithya](docs/tasks/ADHITHYA.md).
-4. Check [project status](docs/STATUS.md) before starting implementation.
+4. Check [project status](docs/STATUS.md) and [the current work board](docs/WORK_BOARD.md) before starting implementation.
 
-The shared Unity project is in `Game/`. Its bootstrap changes are being prepared on `setup/unity-bootstrap`; teammates should wait for that foundation to merge before starting dependent implementation. Do not create a replacement Unity project.
+The shared Unity project is now available at `Game/` on `main` after bootstrap PR #2. Open it with Unity **6000.6.8f1**. The bootstrap passed headless import/compilation; gameplay and two-laptop verification remain pending. Start assigned work from the current work board; do not create replacement projects.
 
 ## Schedule
 
