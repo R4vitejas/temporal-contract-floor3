@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,6 +20,41 @@ namespace TemporalContract.Environment.Testing
             body = GetComponent<CharacterController>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+        private void Start()
+        {
+            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"--floor-smoke-test")>=0)
+                StartCoroutine(CheckStandaloneTraversal());
+        }
+        private IEnumerator CheckStandaloneTraversal()
+        {
+            yield return new WaitForFixedUpdate();
+            try
+            {
+                Physics.SyncTransforms();
+                var anchors=UnityEngine.Object.FindFirstObjectByType<FloorIntegrationAnchors>();
+                if(anchors==null||anchors.rooms.Length!=4||anchors.boardMap==null)
+                    throw new InvalidOperationException("Missing standalone floor references.");
+                if(UnityEngine.Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Count(a=>a.enabled)!=1)
+                    throw new InvalidOperationException("The walkthrough must have one active listener.");
+                foreach(var room in anchors.rooms)
+                {
+                    if(room.board==null||room.roomLight==null)throw new InvalidOperationException("Missing room binding.");
+                    bool north=room.sourceRoom=="ClassRoom06"||room.sourceRoom=="ClassRoom05";
+                    var direction=north?Vector3.forward:Vector3.back;
+                    var threshold=room.doorHinge.position+new Vector3(.46707f,.03f,0f);
+                    body.enabled=false;transform.position=threshold-direction;body.enabled=true;
+                    for(int step=0;step<40;step++)body.Move(direction*.05f);
+                    if(Vector3.Distance(transform.position,threshold+direction)>.15f)
+                        throw new InvalidOperationException("Standalone traversal blocked: "+room.sourceRoom);
+                }
+                Debug.Log("FLOOR_STANDALONE_SMOKE_PASS: four doorways traversed with a 1.8 m CharacterController; room/map/listener references valid.");
+                Application.Quit(0);
+            }
+            catch(Exception error)
+            {
+                Debug.LogException(error);Application.Quit(1);
+            }
         }
         private void Update()
         {

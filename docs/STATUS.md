@@ -1,25 +1,28 @@
 # Project status
 
-## Foundation
+## Foundation and subsystem review
 
-- Bootstrap PR #2 merged: shared Unity project, fixed package graph, contracts, router, integration guide.
-- Exact bootstrap tracked files and network-core snapshot each passed headless Unity 6000.6.8f1 import/compilation with exit code 0 in temporary review projects. This is not gameplay or visual verification.
-- Network PR #1 remains open with requested changes, tracked in #3. Global session auto-start currently interferes with independent test scenes; F1 handling needs to move out of OnGUI. Do not merge until corrected and verified.
-- Adhithya has existing work on feature/environment-interactions, including prefabs/test scene/handoff. It is not yet merged or independently verified with two clients; #6 requests the PR and validation.
-- Floor integration, real multiplayer acceptance, builds and video remain pending. No implementation of Ravitejas's assigned issues has been started during this coordination pass.
+- Bootstrap PR #2 is merged on main: Unity 6000.6.8f1, pinned runtime packages, contracts and router.
+- Network PR #1 at `57e1eff` fixes global startup interference and F1 handling. Both original review threads are resolved. Headless import/compilation passed; required interactive host/client/recovery checks remain pending, so #3 and PR #1 remain open.
+- Combat/round PR #17 at `30826aa` is stacked on PR #1. Headless import/compilation passed. Combat, round/rematch and real interaction integration acceptance remain pending (#4–#5).
+- Interaction PR #16 at `8af16b1` includes independent prefabs/test scene/lifecycle hooks. Its reported host/client tests are distinct from independently observed tests. Cover-release safety findings and explicit door/feedback/lifecycle evidence remain pending (#6–#7).
+- No presentation PR is available on main yet. Sanjana can continue #8–#10 against mocks and the shared contracts without waiting for Main.
 
-## Work tracking
+## Ravitejas's authorized work
 
-Use [WORK_BOARD.md](WORK_BOARD.md) for owner assignments, start order and integration dependencies. All twelve issues belong to the MVP demo — November 17 milestone. Keep independent scenes/mocks available so another owner's unfinished code does not block feature development.
+Ravitejas explicitly authorized #12–#14 on November 15, 2026.
 
-All four accounts have repository access and their issues are formally assigned: SamatmaAB, RealAdhi, sanjanaaravamudhan and R4vitejas.
+- Floor PR #18 (`feature/floor-assets`, `6991dd1`) selects source Classrooms 02/03/05/06 and their corridor, retaining supplied architecture/boards/windows/doors/chair. A labelled map and cutaway preview are included.
+- Unity import/compilation and static geometry checks passed: four clear doorways, three supported/unoccupied anchors, zero missing scripts, 46,037 rendered triangles and 68 colliders. Fresh remote clone/LFS retrieval passed with all seven binary assets matching SHA-256. Interactive walkthrough and actual hardware performance are not claimed.
+- `feature/floor-integration` prepares Main with environment geometry/anchors and no test controller. Main stays disabled in Build Settings until reviewed production assembly; this is not the complete playable game.
+- Production assembly needs accepted networking/round/interaction prefabs and Sanjana's documented presentation binder. Setup: [FLOOR_INTEGRATION.md](FLOOR_INTEGRATION.md). No teammate implementation is replaced or silently modified.
+- Release/hotspot/build/viva preparation is in [DEMO_CHECKLIST.md](DEMO_CHECKLIST.md). Ravitejas's Ubuntu laptop and installed Linux build module are recorded. Second-laptop selection, the actual two-laptop run, measured FPS, three matches, frozen build/video and rehearsal remain pending.
 
-## Immediate next actions
+## Work tracking and next steps
 
-1. Everyone pulls main; new work branches from the merged bootstrap.
-2. Samatma addresses #3 on PR #1, then completes combat/round issues #4 and #5.
-3. Adhithya incorporates main, opens his interaction PR for #6, and validates lifecycle hooks in #7.
-4. Sanjana starts #8 using placeholders; UI and feedback can use mock data/events.
-5. Ravitejas's #12–#14 are assigned for later and must not be auto-started by an assistant.
+Use [WORK_BOARD.md](WORK_BOARD.md) for assignments. Ready for review is not accepted, and an issue stays open until its required evidence passes. Preserve standalone test scenes for independent development.
 
-Ravitejas maintains this status summary after reviewed merges. Report subsystem progress/test evidence in the relevant issue/PR to avoid concurrent edits here.
+1. Owners finish their subsystem fixes and host/client evidence; no one needs Main to do this.
+2. Review and merge accepted PRs in dependency order. The floor/integration PRs are stacked and must be retargeted after their base merges.
+3. Assemble reviewed prefabs into Main and verify real role/reset/death, input, feedback and collision behavior.
+4. Run standalone and actual hotspot/two-laptop acceptance before claiming #13–#14 complete. Freeze/record/rehearse target is November 17; November 18 is repairs.

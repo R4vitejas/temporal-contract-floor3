@@ -71,6 +71,6 @@ git lfs pull
 git lfs fsck
 ```
 
-A fresh-clone retrieval check is recorded in the PR after upload. Each teammate still needs Git LFS on their machine. Do not add the original Blender/OBJ sources, builds or recordings to ordinary Git.
+Fresh remote clone retrieval passed on `6991dd1` after configuring Git LFS: all seven binary assets were downloaded and matched SHA-256; `git lfs fsck` passed. Each teammate still needs Git LFS on their machine. Do not add the original Blender/OBJ sources, builds or recordings to ordinary Git.
 
 Unity 6000.6.8f1 import/compilation and the generated environment checks passed (exit 0): four clear doorways, three supported/unoccupied anchors, zero missing scripts, 46,037 rendered triangles and 68 colliders. `Data/Floor3Preview.png` is a Blender cutaway render of the exported geometry, not a Unity gameplay screenshot. No frame-rate or two-laptop claim is made: measure the standalone integrated game at 1280x720 on the weaker demo laptop. The current machine is an Intel Core i3-1005G1 / Iris Plus G1 with approximately 16 GB RAM on Ubuntu 24.04.5; the second laptop is not yet identified. This issue remains open until the visual walkthrough and remaining acceptance evidence are accepted.

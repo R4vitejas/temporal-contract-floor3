@@ -102,7 +102,8 @@ namespace TemporalContract.Environment.EditorTools
             // Clear one source bench from the documented VIP anchor, retaining the other classroom furniture.
             var vipBench=geometry.GetComponentsInChildren<Transform>().FirstOrDefault(t=>t.name=="Source_Shorter.029");
             if(vipBench!=null)vipBench.gameObject.SetActive(false);
-            GameObjectUtility.SetStaticEditorFlags(geometry,StaticEditorFlags.BatchingStatic|StaticEditorFlags.OccluderStatic|StaticEditorFlags.OccludeeStatic);
+            foreach(var child in geometry.GetComponentsInChildren<Transform>(true))
+                GameObjectUtility.SetStaticEditorFlags(child.gameObject,StaticEditorFlags.BatchingStatic|StaticEditorFlags.OccluderStatic|StaticEditorFlags.OccludeeStatic);
             var collision=new GameObject("Simple Static Colliders").transform;collision.SetParent(root.transform,false);
             Box(collision,"Corridor floor",Source(43.29f,-7.25f,-.065f),new Vector3(17.62f,.1f,14.94f));
             anchors.rooms=new FloorIntegrationAnchors.Room[4];
