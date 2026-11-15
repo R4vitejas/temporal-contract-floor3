@@ -66,9 +66,7 @@ namespace TemporalContract.Interactions.Testing
                 }
             }
 
-            controller.enabled = false;
-            transform.position = new Vector3(-3f + 3f * (OwnerClientId % 3), 0.1f, -8f);
-            controller.enabled = true;
+            MoveToSpawn();
 
             Cursor.lockState = CursorLockMode.Locked;
             router.PromptChanged += OnPromptChanged;
@@ -169,11 +167,13 @@ namespace TemporalContract.Interactions.Testing
             ulong sender = rpcParams.Receive.SenderClientId;
             switch (action)
             {
-                case 0: // new round: baseline restore with a new context
+                case 0: // new round: respawn everyone, then baseline restore with a new context
                     TestRoles.Round++;
+                    RespawnAll();
                     InteractionLifecycle.ResetAll(new RoundResetContext(TestRoles.Round, 1));
                     break;
                 case 1: // same context again: must be harmless
+                    RespawnAll();
                     InteractionLifecycle.ResetAll(new RoundResetContext(TestRoles.Round, 1));
                     break;
                 case 2: // death while holding
@@ -202,10 +202,36 @@ namespace TemporalContract.Interactions.Testing
             }
         }
 
+        private void MoveToSpawn()
+        {
+            controller.enabled = false;
+            transform.position = new Vector3(-3f + 3f * (OwnerClientId % 3), 0.1f, -8f);
+            controller.enabled = true;
+        }
+
+        /// <summary>
+        /// A real round reset also resets player positions (PROJECT_BRIEF). Players are owner-driven,
+        /// so the host asks each owner to move itself. Without this, a player inside the relocked
+        /// restricted room would be trapped after a reset.
+        /// </summary>
+        [Rpc(SendTo.Owner)]
+        private void RespawnRpc()
+        {
+            MoveToSpawn();
+        }
+
         [Rpc(SendTo.ClientsAndHost)]
         private void RoleLabelRpc(string label)
         {
             roleLabel = label;
+        }
+
+        private static void RespawnAll()
+        {
+            foreach (TestPlayerController player in FindObjectsByType<TestPlayerController>(FindObjectsSortMode.None))
+            {
+                player.RespawnRpc();
+            }
         }
 
         private ulong? OtherClient(ulong clientId)
@@ -230,7 +256,20 @@ namespace TemporalContract.Interactions.Testing
 
         private void OnFeedback(FeedbackEvent feedback)
         {
-            feedbackLog.Enqueue($"{feedback.Kind} (obj {feedback.SubjectNetworkObjectId})");
+            string detail = string.Empty;
+            if (feedback.Kind == FeedbackKind.InteractionDenied)
+            {
+                foreach (NetworkInteractable interactable in FindObjectsByType<NetworkInteractable>(FindObjectsSortMode.None))
+                {
+                    if (interactable.IsSpawned && interactable.NetworkObjectId == feedback.SubjectNetworkObjectId)
+                    {
+                        detail = $" [{interactable.name}: {interactable.LastDenialReason}]";
+                        break;
+                    }
+                }
+            }
+
+            feedbackLog.Enqueue($"{feedback.Kind} (obj {feedback.SubjectNetworkObjectId}){detail}");
             while (feedbackLog.Count > 6)
             {
                 feedbackLog.Dequeue();
@@ -250,7 +289,17 @@ namespace TemporalContract.Interactions.Testing
                 $"TEST PLAYER client {OwnerClientId} | role: {roleLabel}");
             GUI.Label(new Rect(10f, 30f, 900f, 24f),
                 "R new-round reset | V same-context reset | K die while holding | T me attacker | Y me defender | U unbind roles | Esc cursor");
-            int y = 54;
+            KeycardPickup card = FindFirstObjectByType<KeycardPickup>();
+            if (card != null && card.IsSpawned)
+            {
+                ulong? holder = card.HolderClientId;
+                GUI.Label(new Rect(10f, 50f, 900f, 24f),
+                    holder.HasValue
+                        ? $"Keycard held by client {holder.Value}{(holder.Value == OwnerClientId ? " (YOU)" : string.Empty)}"
+                        : "Keycard on the floor");
+            }
+
+            int y = 74;
             foreach (string line in feedbackLog)
             {
                 GUI.Label(new Rect(10f, y, 420f, 22f), line);

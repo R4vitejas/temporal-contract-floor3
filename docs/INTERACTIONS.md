@@ -78,6 +78,11 @@ InteractionLifecycle.OnPlayerDied(clientId);
 - **Unbound provider denies.** Until `BindRoleProvider` is called, nobody may use attacker-only
   actions (keycard pickup). A missing provider never silently makes both players attackers.
   `InteractionRoleGate.AllowAllWhenUnbound` is test-only and must stay false in shipped code.
+- **Reset must come with a player respawn.** `ResetAll` relocks the restricted door and puts the
+  keycard back where it started. A player standing inside the restricted room when it resets would
+  be trapped, and the card (attacker-only) would not reach the defender. The round coordinator must
+  reset player positions at the same boundary, as PROJECT_BRIEF already requires. The test scene
+  does this for `R`/`V` by respawning every player.
 - Reset restores: doors closed and locked-by-default, keycard uncollected, panel not granted,
   switches to their default, cover back at baseline and released. It sets state rather than
   toggling, so repeating the same context is harmless.
@@ -128,31 +133,45 @@ InteractionLifecycle.OnPlayerDied(clientId);
 
 ## Verification status (be honest about it)
 
-Observed means a person ran it in Play Mode. Everything else is pending, not passed.
+Observed means a person ran it in Play Mode and reported it. Everything else is pending, not passed.
+Host + client was run by Adhithya with two instances of `InteractionsTest.unity` (host and one client).
 
 | Check (`InteractionsTest.unity`) | Host only | Host + client |
 |---|---|---|
 | Scripts and builder compile (Unity 6000.6.8f1) | compiled | n/a |
-| Door open/close, locked door denial | observed | PENDING |
-| Keycard pickup, panel denial then unlock, restricted door | observed | PENDING |
-| Wall switch toggles room lights | observed | PENDING |
-| Cover pick up / place / invalid placement | observed | PENDING |
-| `R` reset restores all baselines | observed | PENDING |
-| `K` drops held cover (simulated death) | observed | PENDING |
-| Simultaneous keycard pickup race | n/a | PENDING |
-| Door will not close on another player | n/a | PENDING |
-| Attacker-only card with roles (`T`/`Y`), denied defender | PENDING | PENDING |
-| Unbound roles deny attacker actions (`U`) | PENDING | PENDING |
-| Same-context reset repeated (`V`) is harmless | PENDING | PENDING |
-| Requester-only denial feedback, positional feedback identity | PENDING | PENDING |
+| Door open/close, locked door denial | observed | observed |
+| Keycard pickup, panel denial then unlock, restricted door | observed | observed |
+| Wall switch toggles room lights | observed | observed |
+| Cover pick up / place / invalid placement | observed | observed |
+| `R` reset restores all baselines | observed | observed (see finding 1) |
+| `K` drops held cover (simulated death) | observed | observed |
+| Simultaneous keycard pickup | n/a | one player got it; the other player's feedback or state looked wrong. Diagnostics added, RETEST PENDING (finding 2) |
+| Door will not close on another player | n/a | reported OK, not itemised |
+| Attacker-only card with roles (`T`/`Y`), `U` unbind, `V` repeat reset | PENDING | reported OK, not itemised |
+| Requester-only denial feedback, positional feedback identity | PENDING | PENDING (denial now shows its reason in the on-screen log) |
+
+Findings from the host + client run:
+
+1. **Reset trapped a player.** `R` relocked the restricted door while the attacker was inside and put
+   the keycard back outside, so the attacker was trapped and the defender could not take the card
+   (it is attacker-only). Cause: the test reset did not respawn players, which a real round reset
+   does (PROJECT_BRIEF). Fixed in the test scene: `R`/`V` now respawn every player first. The
+   coordinator must do the same (see the Samatma section).
+2. **Keycard simultaneous pickup.** Host-side logic is serial (one holder, first request wins), so
+   only one player can hold the card, which matches what was seen. The loser's on-screen feedback
+   looked wrong, and the cause was not pinned from code alone. Added: every request is logged on the
+   host with its result, denial reasons travel to the requester and show in the feedback log, and the
+   HUD shows who holds the card. Retest with two instances and report the exact log lines.
 
 Not covered by this scene at all: combat death with Samatma's code, the real round coordinator,
 the real floor, two laptops on a LAN, performance on the demo laptop.
 
-Test hotkeys in the test scene (host-executed, not shipped features): `R` reset with a new round
-context, `V` reset with the same context, `K` die while holding, `T` make me the attacker, `Y` make
-me the defender (the other client becomes attacker), `U` unbind the role provider (nobody is attacker).
-The scene starts with the host bound as attacker. The test role provider lives in `Interactions/Test`.
+Test hotkeys in the test scene (host-executed, not shipped features): `R` respawn everyone and reset
+with a new round context, `V` respawn and reset with the same context, `K` die while holding, `T` make
+me the attacker, `Y` make me the defender (the other client becomes attacker), `U` unbind the role
+provider (nobody is attacker). The scene starts with the host bound as attacker, so the client is the
+defender and cannot take the card until `T`. The test role provider lives in `Interactions/Test`.
+
 
 ## Known limitations
 

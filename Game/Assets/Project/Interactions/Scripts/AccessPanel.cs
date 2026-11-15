@@ -45,15 +45,20 @@ namespace TemporalContract.Interactions
 
         protected override bool ExecuteOnServer(in InteractionRequest request, NetworkObject player)
         {
-            if (keycard == null || restrictedDoor == null || granted.Value)
+            if (keycard == null || restrictedDoor == null)
             {
-                return false;
+                return Deny("panel not wired (keycard/door reference missing)");
+            }
+
+            if (granted.Value)
+            {
+                return Deny("already granted");
             }
 
             // Denied path (no card) returns false; the base class sends InteractionDenied to the requester.
             if (!keycard.IsHeldBy(request.ActorClientId))
             {
-                return false;
+                return Deny("requester does not hold the keycard");
             }
 
             granted.Value = true;

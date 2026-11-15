@@ -126,7 +126,7 @@ namespace TemporalContract.Interactions
                 // One cover per player, and one holder per cover (host handles requests serially).
                 if (IsHoldingAnyCover(request.ActorClientId))
                 {
-                    return false;
+                    return Deny("already holding another cover");
                 }
 
                 holderClientId.Value = request.ActorClientId;
@@ -136,12 +136,12 @@ namespace TemporalContract.Interactions
 
             if (holderClientId.Value != request.ActorClientId)
             {
-                return false;
+                return Deny($"held by client {holderClientId.Value}");
             }
 
             if (!TryComputePlacement(player.transform, out Vector3 position, out Quaternion rotation))
             {
-                return false;
+                return Deny("invalid placement (no surface, blocked line, or overlap)");
             }
 
             transform.SetPositionAndRotation(position, rotation);

@@ -64,34 +64,50 @@ namespace TemporalContract.Interactions
             // Actor identity comes from the transport, never from client-supplied data.
             ulong sender = rpcParams.Receive.SenderClientId;
             var request = new InteractionRequest(sender, NetworkObjectId);
-            if (!TryHandleInteraction(request))
+            bool granted = TryHandleInteraction(request);
+            Debug.Log($"[{name}] request from client {sender}: " +
+                      (granted ? "granted" : $"denied ({pendingDenyReason})"), this);
+            if (!granted)
             {
-                DeniedRpc(sender);
+                DeniedRpc(sender, pendingDenyReason);
             }
+        }
+
+        private string pendingDenyReason = string.Empty;
+
+        /// <summary>Why the most recent request was denied (set on the host, then sent to the requester).</summary>
+        public string LastDenialReason { get; private set; } = string.Empty;
+
+        /// <summary>Record the denial reason and return false. Used by host-side validation.</summary>
+        protected bool Deny(string reason)
+        {
+            pendingDenyReason = reason;
+            return false;
         }
 
         public bool TryHandleInteraction(in InteractionRequest request)
         {
+            pendingDenyReason = "rejected";
             if (!IsServer || !IsSpawned)
             {
-                return false;
+                return Deny("not host or not spawned");
             }
 
             if (request.TargetNetworkObjectId != NetworkObjectId)
             {
-                return false;
+                return Deny("wrong target id");
             }
 
             NetworkObject player = NetworkManager.SpawnManager.GetPlayerNetworkObject(request.ActorClientId);
             if (player == null)
             {
-                return false;
+                return Deny("no player object for sender");
             }
 
             float maxSqr = serverMaxDistance * serverMaxDistance;
             if ((player.transform.position - InteractionOrigin).sqrMagnitude > maxSqr)
             {
-                return false;
+                return Deny("out of range");
             }
 
             return ExecuteOnServer(request, player);
@@ -128,10 +144,11 @@ namespace TemporalContract.Interactions
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        private void DeniedRpc(ulong deniedClientId)
+        private void DeniedRpc(ulong deniedClientId, string reason)
         {
             if (NetworkManager.LocalClientId == deniedClientId)
             {
+                LastDenialReason = reason;
                 RaiseLocal(FeedbackKind.InteractionDenied, 0f);
             }
         }

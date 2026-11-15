@@ -22,6 +22,9 @@ namespace TemporalContract.Interactions
         public bool IsCollected => holderClientId.Value != NoHolder;
         public bool IsHeldBy(ulong clientId) => holderClientId.Value == clientId;
 
+        /// <summary>Replicated holder for HUD/keycard status; null while the card is on the floor.</summary>
+        public ulong? HolderClientId => IsCollected ? holderClientId.Value : (ulong?)null;
+
         public override void OnNetworkSpawn()
         {
             if (IsServer)
@@ -68,9 +71,14 @@ namespace TemporalContract.Interactions
 
         protected override bool ExecuteOnServer(in InteractionRequest request, NetworkObject player)
         {
-            if (IsCollected || !InteractionRoleGate.CanActAsAttacker(request.ActorClientId))
+            if (IsCollected)
             {
-                return false;
+                return Deny($"already held by client {holderClientId.Value}");
+            }
+
+            if (!InteractionRoleGate.CanActAsAttacker(request.ActorClientId))
+            {
+                return Deny("not the attacker");
             }
 
             holderClientId.Value = request.ActorClientId;

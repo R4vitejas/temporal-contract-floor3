@@ -108,13 +108,13 @@ namespace TemporalContract.Interactions
         {
             if (isLocked.Value)
             {
-                return false;
+                return Deny("door locked");
             }
 
             bool opening = !isOpen.Value;
             if (!opening && IsDoorwayOccupied())
             {
-                return false;
+                return Deny("a player is standing in the doorway");
             }
 
             isOpen.Value = opening;
