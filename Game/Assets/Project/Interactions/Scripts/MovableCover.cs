@@ -229,8 +229,11 @@ namespace TemporalContract.Interactions
                 return false;
             }
 
+            // Footprint offset relative to the cover's pivot, re-applied at the candidate pose.
             Vector3 scale = footprint.transform.lossyScale;
-            Vector3 center = basePosition + rotation * Vector3.Scale(footprint.center, scale) + Vector3.up * 0.03f;
+            Vector3 localCenter = transform.InverseTransformPoint(footprint.transform.TransformPoint(footprint.center));
+            Vector3 center = basePosition + rotation * Vector3.Scale(localCenter, transform.lossyScale)
+                + Vector3.up * 0.03f;
             Vector3 half = Vector3.Scale(footprint.size * 0.5f, scale) - new Vector3(0.02f, 0.02f, 0.02f);
             half = Vector3.Max(half, new Vector3(0.01f, 0.01f, 0.01f));
 
