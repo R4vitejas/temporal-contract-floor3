@@ -25,6 +25,7 @@ namespace TemporalContract.Networking
         private NetworkManager networkManager;
         private UnityTransport transport;
         private GameObject lobbyPrefab;
+        private GameObject playerPrefab;
         private string joinAddress = "127.0.0.1";
         private string portText = DefaultPort.ToString();
         private string status = "Ready to host or join a LAN session.";
@@ -35,32 +36,11 @@ namespace TemporalContract.Networking
         private bool observedMatchStarted;
         private readonly HashSet<ulong> connectedSessionClients = new HashSet<ulong>();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureSessionController()
-        {
-            if (FindFirstObjectByType<LanSessionController>() != null)
-            {
-                return;
-            }
-
-            NetworkManager manager = FindFirstObjectByType<NetworkManager>();
-            GameObject host = manager != null ? manager.gameObject : new GameObject("LAN Session");
-            if (host.GetComponent<UnityTransport>() == null)
-            {
-                host.AddComponent<UnityTransport>();
-            }
-            if (host.GetComponent<NetworkManager>() == null)
-            {
-                host.AddComponent<NetworkManager>();
-            }
-            host.AddComponent<LanSessionController>();
-        }
-
         private void Awake()
         {
             if (instance != null && instance != this)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
 
@@ -70,7 +50,7 @@ namespace TemporalContract.Networking
             transport = GetComponent<UnityTransport>();
             lobbyPrefab = Resources.Load<GameObject>(LobbyResourcePath);
 
-            GameObject playerPrefab = Resources.Load<GameObject>(PlayerResourcePath);
+            playerPrefab = Resources.Load<GameObject>(PlayerResourcePath);
             if (playerPrefab == null || lobbyPrefab == null)
             {
                 errorMessage = "Network prefabs are missing. Run Temporal Contract > Build Network Core Assets.";
@@ -81,7 +61,8 @@ namespace TemporalContract.Networking
             networkManager.NetworkConfig.NetworkTransport = transport;
             networkManager.NetworkConfig.PlayerPrefab = playerPrefab;
             networkManager.NetworkConfig.ConnectionApproval = true;
-            networkManager.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = lobbyPrefab });
+            RegisterNetworkPrefab(playerPrefab);
+            RegisterNetworkPrefab(lobbyPrefab);
             networkManager.ConnectionApprovalCallback = ApproveConnection;
             networkManager.OnClientConnectedCallback += OnClientConnected;
             networkManager.OnClientDisconnectCallback += OnClientDisconnected;
@@ -108,6 +89,8 @@ namespace TemporalContract.Networking
                 return;
             }
 
+            connectedSessionClients.Clear();
+            shutdownRequested = false;
             transport.SetConnectionData("127.0.0.1", port, "0.0.0.0");
             if (!networkManager.StartHost())
             {
@@ -134,6 +117,8 @@ namespace TemporalContract.Networking
                 return;
             }
 
+            connectedSessionClients.Clear();
+            shutdownRequested = false;
             transport.SetConnectionData(address.ToString(), port);
             if (!networkManager.StartClient())
             {
@@ -152,6 +137,7 @@ namespace TemporalContract.Networking
                 networkManager.Shutdown();
             }
             shutdownRequested = false;
+            connectedSessionClients.Clear();
             menuVisible = true;
             observedMatchStarted = false;
             SetLocalPlayerInputCaptured(false);
@@ -162,7 +148,7 @@ namespace TemporalContract.Networking
         {
             errorMessage = string.Empty;
             if (networkManager == null || transport == null || lobbyPrefab == null
-                || Resources.Load<GameObject>(PlayerResourcePath) == null)
+                || playerPrefab == null)
             {
                 errorMessage = "Network setup is incomplete. Close and reopen Play Mode after building network assets.";
                 return false;
@@ -173,6 +159,14 @@ namespace TemporalContract.Networking
                 return false;
             }
             return true;
+        }
+
+        private void RegisterNetworkPrefab(GameObject prefab)
+        {
+            if (prefab != null && !networkManager.NetworkConfig.Prefabs.Contains(prefab))
+            {
+                networkManager.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = prefab });
+            }
         }
 
         private bool TryGetPort(out ushort port)
@@ -194,6 +188,12 @@ namespace TemporalContract.Networking
             bool late = lobby != null && lobby.MatchStarted;
             response.Approved = !full && !late;
             response.CreatePlayerObject = response.Approved;
+            if (response.Approved)
+            {
+                bool hostSide = request.ClientNetworkId == NetworkManager.ServerClientId;
+                response.Position = hostSide ? new Vector3(-2.5f, 0f, 0f) : new Vector3(2.5f, 0f, 0f);
+                response.Rotation = hostSide ? Quaternion.identity : Quaternion.Euler(0f, 180f, 0f);
+            }
             if (!response.Approved)
             {
                 response.Reason = late ? "This match has already started." : "This session already has two players.";
@@ -231,6 +231,7 @@ namespace TemporalContract.Networking
                 shutdownRequested = true;
                 networkManager.Shutdown();
                 shutdownRequested = false;
+                connectedSessionClients.Clear();
                 status = "The other player disconnected. Session closed; host or join again.";
             }
             else if (!networkManager.IsServer && clientId == networkManager.LocalClientId)
@@ -238,6 +239,7 @@ namespace TemporalContract.Networking
                 shutdownRequested = true;
                 networkManager.Shutdown();
                 shutdownRequested = false;
+                connectedSessionClients.Clear();
                 string reason = networkManager.DisconnectReason;
                 status = string.IsNullOrWhiteSpace(reason)
                     ? "Host disconnected. Session closed; you can join again."
@@ -245,7 +247,7 @@ namespace TemporalContract.Networking
             }
         }
 
-        private void OnGUI()
+        private void Update()
         {
             bool matchStarted = LobbyNetworkState.Instance != null && LobbyNetworkState.Instance.MatchStarted;
             if (matchStarted && !observedMatchStarted)
@@ -260,6 +262,11 @@ namespace TemporalContract.Networking
                 menuVisible = !menuVisible;
                 SetLocalPlayerInputCaptured(menuVisible);
             }
+        }
+
+        private void OnGUI()
+        {
+            bool matchStarted = LobbyNetworkState.Instance != null && LobbyNetworkState.Instance.MatchStarted;
 
             if (matchStarted && !menuVisible)
             {
@@ -277,7 +284,10 @@ namespace TemporalContract.Networking
 
         private static void SetLocalPlayerInputCaptured(bool captured)
         {
-            NetworkFpsPlayer.LocalOwner?.SetGameplayInputCaptured(captured);
+            if (instance != null)
+            {
+                NetworkFpsPlayer.LocalOwner?.SetGameplayInputCaptured(instance, captured);
+            }
         }
 
         private static string GetLocalIpv4()
@@ -309,7 +319,7 @@ namespace TemporalContract.Networking
             {
                 GUILayout.Space(6f);
                 GUILayout.Label($"For another laptop, use this host address: {GetLocalIpv4()}:{portText} (UDP).");
-                GUILayout.Label("Allow UDP port 7777 through the host firewall when prompted.");
+                GUILayout.Label($"Allow UDP port {portText} through the host firewall when prompted.");
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Port", GUILayout.Width(70f));
                 portText = GUILayout.TextField(portText);
@@ -327,7 +337,7 @@ namespace TemporalContract.Networking
             else
             {
                 GUILayout.Label($"Players: {networkManager.ConnectedClientsIds.Count}/{MaximumPlayers}");
-                if (lobby != null)
+                if (lobby != null && !lobby.MatchStarted)
                 {
                     bool ready = lobby.IsReady(networkManager.LocalClientId);
                     bool nextReady = GUILayout.Toggle(ready, ready ? "Ready" : "Mark Ready");
@@ -346,10 +356,10 @@ namespace TemporalContract.Networking
                             SetLocalPlayerInputCaptured(false);
                         }
                     }
-                    if (lobby.MatchStarted)
-                    {
-                        GUILayout.Label("Match is in progress; late joining is disabled.");
-                    }
+                }
+                else if (lobby != null)
+                {
+                    GUILayout.Label("Match in progress. F1 opens/closes this menu.");
                 }
                 if (GUILayout.Button("Disconnect")) Disconnect();
             }
@@ -360,5 +370,6 @@ namespace TemporalContract.Networking
             }
             GUI.DragWindow(new Rect(0f, 0f, 10000f, 24f));
         }
+
     }
 }

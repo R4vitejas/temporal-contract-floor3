@@ -2,6 +2,7 @@ using TemporalContract.Networking;
 using TemporalContract.Players;
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using Unity.Netcode.Transports.UTP;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -29,11 +30,14 @@ namespace TemporalContract.EditorTools
 
         private static void BuildPlayerPrefab()
         {
-            GameObject player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            player.name = "NetworkPlayer";
-            player.transform.position = Vector3.zero;
-            Object.DestroyImmediate(player.GetComponent<CapsuleCollider>());
+            GameObject player = new GameObject("NetworkPlayer");
+            GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            body.name = "Body";
+            body.transform.SetParent(player.transform, false);
+            body.transform.localPosition = Vector3.up;
+            Object.DestroyImmediate(body.GetComponent<CapsuleCollider>());
             player.AddComponent<CharacterController>();
+            player.GetComponent<CharacterController>().center = Vector3.up;
             player.AddComponent<NetworkObject>();
             player.AddComponent<OwnerNetworkTransform>();
             NetworkFpsPlayer controller = player.AddComponent<NetworkFpsPlayer>();
@@ -67,13 +71,18 @@ namespace TemporalContract.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Test Ground";
-            ground.transform.localScale = new Vector3(4f, 1f, 4f);
+            ground.transform.localScale = new Vector3(6f, 1f, 6f);
 
             GameObject directionalLight = new GameObject("Test Light");
             Light light = directionalLight.AddComponent<Light>();
             light.type = LightType.Directional;
             light.intensity = 1.2f;
             directionalLight.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+
+            GameObject session = new GameObject("Network Core Session (Opt In)");
+            session.AddComponent<UnityTransport>();
+            session.AddComponent<NetworkManager>();
+            session.AddComponent<LanSessionController>();
 
             EditorSceneManager.SaveScene(scene, TestScenePath);
             EditorBuildSettingsScene testScene = new EditorBuildSettingsScene(TestScenePath, true);

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TemporalContract.Core;
 using TemporalContract.Networking;
 using Unity.Netcode;
@@ -18,17 +19,22 @@ namespace TemporalContract.Players
         private CharacterController characterController;
         private float pitch;
         private float verticalSpeed;
-        private bool gameplayInputCaptured = true;
+        private bool alive = true;
+        private readonly HashSet<Object> inputCaptureOwners = new HashSet<Object>();
 
         public static NetworkFpsPlayer LocalOwner { get; private set; }
-        public ulong OwnerClientId => NetworkObject != null ? NetworkObject.OwnerClientId : ulong.MaxValue;
+        public new ulong OwnerClientId => NetworkObject != null ? NetworkObject.OwnerClientId : ulong.MaxValue;
         public Vector3 Position => transform.position;
         public bool IsLocalOwner => IsOwner;
-        public bool IsGameplayInputCaptured => gameplayInputCaptured;
+        public bool IsGameplayInputCaptured => inputCaptureOwners.Count > 0
+            || !alive || LobbyNetworkState.Instance == null || !LobbyNetworkState.Instance.MatchStarted;
+        public float CameraPitch => pitch;
 
         public override void OnNetworkSpawn()
         {
             characterController = GetComponent<CharacterController>();
+            characterController.center = Vector3.up;
+            characterController.enabled = alive;
             if (playerCamera == null)
             {
                 playerCamera = GetComponentInChildren<Camera>(true);
@@ -39,6 +45,10 @@ namespace TemporalContract.Players
             }
 
             bool ownsPlayer = IsOwner;
+            if (IsServer && OwnerClientId == NetworkManager.ServerClientId)
+            {
+                ApplySpawnPosition(attacker: true);
+            }
             if (playerCamera != null)
             {
                 playerCamera.gameObject.SetActive(ownsPlayer);
@@ -73,8 +83,8 @@ namespace TemporalContract.Players
 
         private void Update()
         {
-            if (!IsSpawned || !IsOwner || gameplayInputCaptured || !Application.isFocused
-                || LobbyNetworkState.Instance == null || !LobbyNetworkState.Instance.MatchStarted)
+            PruneDestroyedCaptureOwners();
+            if (!IsSpawned || !IsOwner || IsGameplayInputCaptured || !Application.isFocused)
             {
                 return;
             }
@@ -122,16 +132,28 @@ namespace TemporalContract.Players
             characterController.Move(velocity * Time.deltaTime);
         }
 
-        public void SetGameplayInputCaptured(bool captured)
+        /// <summary>Acquire or release a modal input lock. Use the owning UI component as the key.</summary>
+        public void SetGameplayInputCaptured(Object owner, bool captured)
         {
-            gameplayInputCaptured = captured;
+            if (owner == null)
+            {
+                return;
+            }
+            if (captured)
+            {
+                inputCaptureOwners.Add(owner);
+            }
+            else
+            {
+                inputCaptureOwners.Remove(owner);
+            }
+
             if (!IsOwner)
             {
                 return;
             }
 
-            bool inMatch = LobbyNetworkState.Instance != null && LobbyNetworkState.Instance.MatchStarted;
-            if (captured || !inMatch)
+            if (IsGameplayInputCaptured)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -141,6 +163,65 @@ namespace TemporalContract.Players
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+        }
+
+        public void PlaceAtSpawn(bool attacker)
+        {
+            if (!IsServer)
+            {
+                return;
+            }
+
+            if (IsOwner)
+            {
+                ApplySpawnPosition(attacker);
+            }
+            else
+            {
+                PlaceAtSpawnRpc(attacker);
+            }
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void PlaceAtSpawnRpc(bool attacker, RpcParams rpcParams = default)
+        {
+            if (rpcParams.Receive.SenderClientId != NetworkManager.ServerClientId)
+            {
+                return;
+            }
+            ApplySpawnPosition(attacker);
+        }
+
+        private void ApplySpawnPosition(bool attacker)
+        {
+            transform.SetPositionAndRotation(
+                attacker ? new Vector3(-2.5f, 0f, 0f) : new Vector3(2.5f, 0f, 0f),
+                attacker ? Quaternion.identity : Quaternion.Euler(0f, 180f, 0f));
+            verticalSpeed = 0f;
+            if (characterController != null)
+            {
+                characterController.enabled = false;
+                characterController.enabled = true;
+            }
+        }
+
+        public void SetAliveState(bool isAlive)
+        {
+            alive = isAlive;
+            if (characterController != null)
+            {
+                characterController.enabled = isAlive;
+            }
+            if (!isAlive && IsOwner)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+        }
+
+        private void PruneDestroyedCaptureOwners()
+        {
+            inputCaptureOwners.RemoveWhere(owner => owner == null);
         }
     }
 }
