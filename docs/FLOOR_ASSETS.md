@@ -25,6 +25,7 @@ The FBX importer initially reverses the horizontal axes. `FloorAssetBuilder` mea
 - `Game/Assets/Project/Environment/Models/`: selected-section FBX, four separate source door FBXs, base-pivot source chair FBX. All tracked in Git LFS.
 - `Environment/Prefabs/Floor3Environment.prefab`: environment geometry, primitive collision boxes, room lighting, static door visuals and integration anchors. Contains no networking, combat, HUD, or test player.
 - `Environment/Scenes/EnvironmentTest.unity`: independent walkthrough, with doors fixed open for collision inspection.
+- `Environment/Data/Floor3UnityPreview.png`: actual 1280x720 standalone Intel-GPU screenshot of the environment inspection build.
 - `Environment/Data/Floor3Map.png`: labelled layout for Sanjana's board. It describes the selected section, not the entire building. Green lines mark boards/doors and coral lines mark blocked routes.
 - `Environment/Runtime/FloorIntegrationAnchors.cs`: scene-owned references only; it grants no gameplay authority.
 

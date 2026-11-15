@@ -44,6 +44,14 @@ Run its automated headless geometry check on Ubuntu with `./Floor3.x86_64 -batch
 
 Windows build support is not installed in the current local Editor. If Laptop B uses Windows, arrange the matching Windows module or build the same accepted commit on a teammate's configured Windows Editor. Keep Unity and package versions agreed across the team.
 
+After building, package and checksum the entire directory (the executable alone is only Unity's launcher):
+
+```sh
+python3 Game/Assets/Project/Environment/SourceTools/package_build.py Builds/Floor3-environment-only-Linux
+```
+
+This creates a ZIP and adjacent ZIP SHA-256, plus per-file hashes and a content hash in the build folder. After extraction, run the same helper with `--verify <extracted-build-directory>` to check all packaged data. The current local environment package is `Builds/Floor3-environment-only-Linux.zip`; its manifest records its exact source commit. It is not the frozen multiplayer release.
+
 Do not commit Builds or recordings to ordinary Git. Preserve the frozen source commit, full build directory, manifest and final video together in the team's agreed shared storage. Add usable shared links here once available.
 
 ## Preparation evidence

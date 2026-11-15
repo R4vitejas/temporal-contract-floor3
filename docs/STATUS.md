@@ -16,6 +16,7 @@ Ravitejas explicitly authorized #12–#14 on November 15, 2026.
 - Unity import/compilation and static geometry checks passed: four clear doorways, three supported/unoccupied anchors, zero missing scripts, 46,037 rendered triangles and 68 colliders. Fresh remote clone/LFS retrieval passed with all seven binary assets matching SHA-256. Interactive walkthrough and actual hardware performance are not claimed.
 - `feature/floor-integration` prepares Main with environment geometry/anchors and no test controller. Main stays disabled in Build Settings until reviewed production assembly; this is not the complete playable game.
 - Production assembly needs accepted networking/round/interaction prefabs and Sanjana's documented presentation binder. Setup: [FLOOR_INTEGRATION.md](FLOOR_INTEGRATION.md). No teammate implementation is replaced or silently modified.
+- The Linux environment development build and standalone 1.8 m / radius 0.3 m traversal check passed, including a graphical Intel-GPU run. The 2 m / radius 0.5 m production-size geometry proxy failed at Classroom 02; actual player/door clearance needs owner coordination before Main acceptance. No full-game FPS or LAN pass is claimed.
 - Release/hotspot/build/viva preparation is in [DEMO_CHECKLIST.md](DEMO_CHECKLIST.md). Ravitejas's Ubuntu laptop and installed Linux build module are recorded. Second-laptop selection, the actual two-laptop run, measured FPS, three matches, frozen build/video and rehearsal remain pending.
 
 ## Work tracking and next steps
