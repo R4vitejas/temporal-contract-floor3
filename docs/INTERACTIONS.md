@@ -143,11 +143,11 @@ Host + client was run by Adhithya with two instances of `InteractionsTest.unity`
 | Keycard pickup, panel denial then unlock, restricted door | observed | observed |
 | Wall switch toggles room lights | observed | observed |
 | Cover pick up / place / invalid placement | observed | observed |
-| `R` reset restores all baselines | observed | observed (see finding 1) |
+| `R` reset restores all baselines, players respawn | observed | observed (retested after finding 1) |
 | `K` drops held cover (simulated death) | observed | observed |
-| Simultaneous keycard pickup | n/a | one player got it; the other player's feedback or state looked wrong. Diagnostics added, RETEST PENDING (finding 2) |
+| Simultaneous keycard pickup | n/a | observed: one winner, loser denied with reason (retested after finding 2) |
 | Door will not close on another player | n/a | reported OK, not itemised |
-| Attacker-only card with roles (`T`/`Y`), `U` unbind, `V` repeat reset | PENDING | reported OK, not itemised |
+| Attacker-only card with roles (`T`/`Y`), `U` unbind, `V` repeat reset | PENDING | observed (retest run) |
 | Requester-only denial feedback, positional feedback identity | PENDING | PENDING (denial now shows its reason in the on-screen log) |
 
 Findings from the host + client run:
@@ -161,7 +161,7 @@ Findings from the host + client run:
    only one player can hold the card, which matches what was seen. The loser's on-screen feedback
    looked wrong, and the cause was not pinned from code alone. Added: every request is logged on the
    host with its result, denial reasons travel to the requester and show in the feedback log, and the
-   HUD shows who holds the card. Retest with two instances and report the exact log lines.
+   HUD shows who holds the card. Retested by Adhithya with two instances after these changes: the race, the reset/respawn and the attacker/defender swap all behaved correctly.
 
 Not covered by this scene at all: combat death with Samatma's code, the real round coordinator,
 the real floor, two laptops on a LAN, performance on the demo laptop.
