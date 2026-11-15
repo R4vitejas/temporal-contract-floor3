@@ -268,13 +268,35 @@ namespace TemporalContract.Interactions
                 return;
             }
 
-            if (TryFindSurface(transform.position + Vector3.up * 0.5f, out RaycastHit surface)
-                && surface.normal.y >= minSurfaceNormalY
-                && !OverlapsBlockers(surface.point, transform.rotation))
+            // Try, in order: straight down from the carry point, then a ring around the holder's feet
+            // (the carry point may be inside a wall), and finally the baseline pose.
+            Quaternion rotation = transform.rotation;
+            var candidates = new List<Vector3> { transform.position };
+            NetworkObject holder = FindPlayer(clientId);
+            if (holder != null)
             {
-                transform.position = surface.point;
+                Vector3 feet = holder.transform.position;
+                candidates.Add(feet);
+                candidates.Add(feet + holder.transform.forward * 0.9f);
+                candidates.Add(feet - holder.transform.forward * 0.9f);
+                candidates.Add(feet + holder.transform.right * 0.9f);
+                candidates.Add(feet - holder.transform.right * 0.9f);
             }
-            else
+
+            bool placed = false;
+            foreach (Vector3 candidate in candidates)
+            {
+                if (TryFindSurface(candidate + Vector3.up * 0.5f, out RaycastHit surface)
+                    && surface.normal.y >= minSurfaceNormalY
+                    && !OverlapsBlockers(surface.point, rotation))
+                {
+                    transform.SetPositionAndRotation(surface.point, rotation);
+                    placed = true;
+                    break;
+                }
+            }
+
+            if (!placed)
             {
                 transform.SetPositionAndRotation(baselinePosition, baselineRotation);
             }

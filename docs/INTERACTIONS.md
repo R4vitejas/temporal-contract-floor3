@@ -15,7 +15,8 @@ anything in `Interactions/`.
 | `AccessPanel` | Denies without the card. On success unlocks the restricted door for the round. |
 | `WallSwitch` | Shared on/off for a group of lights, with a configurable dim level when off. |
 | `MovableCover` | Chair/desk. One holder per object, one cover per player, host-validated placement. |
-| `InteractionRoleGate` | Static hook so interactions can ask "is this client the attacker?". |
+| `InteractionRoleGate` | Static hook so interactions can ask "is this client the attacker?". Unbound = attacker-only actions DENIED. |
+| `InteractionLifecycle` | The adapter the match coordinator calls: `BindRoleProvider`, `ResetAll`, `OnPlayerDied`. Host-only. |
 
 Prefabs: `Interactions/Prefabs/` (`Door_Ordinary`, `Door_Restricted`, `Keycard`, `AccessPanel`,
 `WallSwitch`, `Cover_Chair`, `Cover_Desk`). They use placeholder cube meshes.
@@ -59,13 +60,30 @@ Interactions import no audio/UI. Add the sounds in your own assets and subscribe
 ## Integration requirements per teammate
 
 ### Samatma (rounds, players, combat)
-- Set `InteractionRoleGate.IsAttacker` (a `Func<ulong,bool>`) from your role code. While it is null,
-  every client counts as the attacker (so the keycard works in tests). Attacker-only: keycard pickup.
-- At every round boundary call `ResetForRound(context)` on every spawned `NetworkInteractable`
-  (they are `IRoundResetParticipant`). Reset restores: doors closed and locked-by-default, keycard
-  uncollected, panel not granted, switch to its default, cover back to baseline and released.
-- When a player dies call `MovableCover.ReleaseIfHeldBy(clientId)` on every cover (host only).
-  Disconnect is already handled inside `MovableCover`.
+Three host-side calls, all in `TemporalContract.Interactions.InteractionLifecycle`. You do not need
+to find or wire any interaction object:
+
+```csharp
+// 1. Once, when roles exist (and again whenever the attacker changes at the round swap).
+//    The delegate answers "is this client currently the attacker?". Host only.
+InteractionLifecycle.BindRoleProvider(clientId => clientId == currentAttackerClientId);
+
+// 2. At every round boundary (including rematch), after you pick the new roles.
+InteractionLifecycle.ResetAll(new RoundResetContext(roundIndex, matchId));
+
+// 3. When a player dies (disconnect is already handled inside MovableCover).
+InteractionLifecycle.OnPlayerDied(clientId);
+```
+
+- **Unbound provider denies.** Until `BindRoleProvider` is called, nobody may use attacker-only
+  actions (keycard pickup). A missing provider never silently makes both players attackers.
+  `InteractionRoleGate.AllowAllWhenUnbound` is test-only and must stay false in shipped code.
+- Reset restores: doors closed and locked-by-default, keycard uncollected, panel not granted,
+  switches to their default, cover back at baseline and released. It sets state rather than
+  toggling, so repeating the same context is harmless.
+- Death or disconnect drops held cover at the first valid spot among: under the carry point, then a
+  ring around the holder's feet, then the baseline pose. The holder lock is always cleared, so the
+  object can be picked up again.
 - The player prefab needs a `NetworkObject` and a non-trigger collider (a `CharacterController`
   is fine). Door-close safety and cover placement detect players with
   `NetworkObject.IsPlayerObject` on a hit collider.
@@ -110,14 +128,31 @@ Interactions import no audio/UI. Add the sounds in your own assets and subscribe
 
 ## Verification status (be honest about it)
 
-- All scripts and the builder compile with no errors in Unity 6000.6.8f1.
-- Adhithya ran `InteractionsTest.unity` as host in Play Mode and reported that the interactions
-  work (door, keycard/panel/restricted door, switch, cover).
-- NOT yet tested: a real client joining the host (two instances or two laptops), simultaneous pickup
-  races between two players, cover placement against a second player, death while holding with
-  Samatma's combat, reset driven by the real round coordinator, performance on the demo laptop.
-- Test hotkeys in the test scene: `R` triggers a round reset on every interaction, `K` drops held
-  cover as if the holder died. Both are host-executed test hooks, not shipped features.
+Observed means a person ran it in Play Mode. Everything else is pending, not passed.
+
+| Check (`InteractionsTest.unity`) | Host only | Host + client |
+|---|---|---|
+| Scripts and builder compile (Unity 6000.6.8f1) | compiled | n/a |
+| Door open/close, locked door denial | observed | PENDING |
+| Keycard pickup, panel denial then unlock, restricted door | observed | PENDING |
+| Wall switch toggles room lights | observed | PENDING |
+| Cover pick up / place / invalid placement | observed | PENDING |
+| `R` reset restores all baselines | observed | PENDING |
+| `K` drops held cover (simulated death) | observed | PENDING |
+| Simultaneous keycard pickup race | n/a | PENDING |
+| Door will not close on another player | n/a | PENDING |
+| Attacker-only card with roles (`T`/`Y`), denied defender | PENDING | PENDING |
+| Unbound roles deny attacker actions (`U`) | PENDING | PENDING |
+| Same-context reset repeated (`V`) is harmless | PENDING | PENDING |
+| Requester-only denial feedback, positional feedback identity | PENDING | PENDING |
+
+Not covered by this scene at all: combat death with Samatma's code, the real round coordinator,
+the real floor, two laptops on a LAN, performance on the demo laptop.
+
+Test hotkeys in the test scene (host-executed, not shipped features): `R` reset with a new round
+context, `V` reset with the same context, `K` die while holding, `T` make me the attacker, `Y` make
+me the defender (the other client becomes attacker), `U` unbind the role provider (nobody is attacker).
+The scene starts with the host bound as attacker. The test role provider lives in `Interactions/Test`.
 
 ## Known limitations
 
