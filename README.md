@@ -9,7 +9,7 @@ Two-player desktop LAN game built around environmental interactions in the suppl
 3. Read your task brief: [Ravitejas](docs/tasks/RAVITEJAS.md), [Samatma](docs/tasks/SAMATMA.md), [Sanjana](docs/tasks/SANJANA.md), [Adhithya](docs/tasks/ADHITHYA.md).
 4. Check [project status](docs/STATUS.md) before starting implementation.
 
-This repository initially contains planning and handoff documents only. The Unity project has not been created. Samatma owns the bootstrap; teammates must not independently create replacement projects.
+The shared Unity project is in `Game/`. Its bootstrap changes are being prepared on `setup/unity-bootstrap`; teammates should wait for that foundation to merge before starting dependent implementation. Do not create a replacement Unity project.
 
 ## Schedule
 

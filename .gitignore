@@ -8,6 +8,8 @@
 [Gg]ame/[Rr]ecordings/
 [Gg]ame/[Bb]uild/
 [Gg]ame/[Bb]uilds/
+# Preserved nested Unity repository from initial project creation; shared project is Game/ itself.
+Game/Temporal Contract/
 # Local tooling and secrets
 .vs/
 .idea/
