@@ -1,0 +1,29 @@
+# Unity generated state
+[Gg]ame/[Ll]ibrary/
+[Gg]ame/[Tt]emp/
+[Gg]ame/[Oo]bj/
+[Gg]ame/[Ll]ogs/
+[Gg]ame/[Uu]ser[Ss]ettings/
+[Gg]ame/[Mm]emoryCaptures/
+[Gg]ame/[Rr]ecordings/
+[Gg]ame/[Bb]uild/
+[Gg]ame/[Bb]uilds/
+# Local tooling and secrets
+.vs/
+.idea/
+*.csproj
+*.sln
+*.slnx
+*.user
+*.pidb
+*.booproj
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+# Original source and deliverables shared separately
+source-assets/
+raw-assets/
+Builds/
+Deliverables/
