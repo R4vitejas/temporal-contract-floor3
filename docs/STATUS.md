@@ -1,5 +1,9 @@
 # Project status
 
+## Full-floor scope correction — November 16
+
+Ravitejas requires the entire supplied floor. The four-room export, map and walkthrough in PR #18 and the dependent Main preparation in PR #19 are prototypes that need full-floor revision before acceptance. Their existing validation results apply only to that prototype. The original Blender files remain unchanged. Live Unity MCP setup is being prepared; the full-floor replacement has not yet been built.
+
 ## Foundation and subsystem review
 
 - Bootstrap PR #2 is merged on main: Unity 6000.6.8f1, pinned runtime packages, contracts and router.
