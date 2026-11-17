@@ -1,3 +1,5 @@
+> November 18 update: the real two-laptop hotspot test is planned for the next team meeting. Collect the second laptop specifications then; continue local environment/build checks meanwhile.
+
 # Floor 3 demo and viva checklist
 
 Owner: Ravitejas. Issue #14. This is a preparation record; unobserved checks remain pending.

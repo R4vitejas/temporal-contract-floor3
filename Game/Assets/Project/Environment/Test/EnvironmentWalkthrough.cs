@@ -11,26 +11,51 @@ namespace TemporalContract.Environment.Testing
     public sealed class EnvironmentWalkthrough : MonoBehaviour
     {
         public Camera view;
+        public Vector3[] doorwayProbes = Array.Empty<Vector3>();
+        public Vector3[] doorwayDirections = Array.Empty<Vector3>();
         private CharacterController body;
         private float pitch;
         private float verticalSpeed;
         private bool automated;
-        private readonly Vector3 start = new Vector3(-2.5f, .05f, 0f);
+        public Vector3 homePosition = new Vector3(-2.5f, .05f, 0f);
+        public string instructions = "FLOOR ASSET TEST · WASD / mouse · Esc cursor · Home respawn\nDoors fixed open for traversal. Production interactions and multiplayer are tested separately.";
         private void Awake()
         {
             body = GetComponent<CharacterController>();
             var args=System.Environment.GetCommandLineArgs();
-            automated=Array.IndexOf(args,"--floor-smoke-test")>=0||Array.IndexOf(args,"--floor-production-capsule-test")>=0;
+            automated=Array.IndexOf(args,"--floor-smoke-test")>=0||Array.IndexOf(args,"--floor-production-capsule-test")>=0||Array.IndexOf(args,"--full-floor-smoke-test")>=0;
             Cursor.lockState = automated?CursorLockMode.None:CursorLockMode.Locked;
             Cursor.visible = automated;
         }
         private void Start()
         {
             var args=System.Environment.GetCommandLineArgs();
+            if(Array.IndexOf(args,"--full-floor-smoke-test")>=0){StartCoroutine(CheckFullFloorTraversal());return;}
             bool productionSize=Array.IndexOf(args,"--floor-production-capsule-test")>=0;
             if(productionSize){body.radius=.5f;body.height=2f;body.center=Vector3.up;}
             if(productionSize||Array.IndexOf(args,"--floor-smoke-test")>=0)
                 StartCoroutine(CheckStandaloneTraversal());
+        }
+        private IEnumerator CheckFullFloorTraversal()
+        {
+            yield return new WaitForFixedUpdate();
+            try
+            {
+                if(doorwayProbes.Length!=6 || doorwayDirections.Length!=6)throw new InvalidOperationException("Missing full-floor doorway probes.");
+                Physics.SyncTransforms();
+                for(int i=0;i<doorwayProbes.Length;i++)foreach(float sign in new[]{-1f,1f})
+                {
+                    Vector3 direction=doorwayDirections[i]*sign;
+                    body.enabled=false;transform.position=doorwayProbes[i]-direction*.85f;body.enabled=true;
+                    for(int step=0;step<40;step++)body.Move(direction*.0425f+Vector3.down*.01f);
+                    Vector3 target=doorwayProbes[i]+direction*.85f;
+                    if(Vector2.Distance(new Vector2(transform.position.x,transform.position.z),new Vector2(target.x,target.z))>.12f)
+                        throw new InvalidOperationException("Full-floor standalone doorway blocked: "+i+" direction="+sign);
+                }
+                Debug.Log("FULL_FLOOR_STANDALONE_PASS: 12/12 classroom doorway traversals; inspection capsule height=1.8 radius=0.3 step=0.05.");
+                Application.Quit(0);
+            }
+            catch(Exception error){Debug.LogException(error);Application.Quit(1);}
         }
         private IEnumerator CheckStandaloneTraversal()
         {
@@ -97,7 +122,7 @@ namespace TemporalContract.Environment.Testing
             if (keys.homeKey.wasPressedThisFrame)
             {
                 body.enabled = false;
-                transform.position = start;
+                transform.position = homePosition;
                 body.enabled = true;
                 verticalSpeed = 0f;
             }
@@ -116,7 +141,7 @@ namespace TemporalContract.Environment.Testing
         private void OnGUI()
         {
             GUI.Box(new Rect(12f, 12f, 670f, 54f),
-                "FLOOR ASSET TEST · WASD / mouse · Esc cursor · Home respawn\nDoors fixed open for traversal. Production interactions and multiplayer are tested separately.");
+                instructions);
         }
     }
 }

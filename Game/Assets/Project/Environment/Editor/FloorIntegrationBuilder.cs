@@ -18,24 +18,12 @@ namespace TemporalContract.Environment.EditorTools
         [MenuItem("Temporal Contract/Floor/Prepare Main Scene")]
         public static void PrepareMain()
         {
-            if(AssetDatabase.LoadAssetAtPath<FloorAssemblyConfig>(ConfigPath)==null)
-                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<FloorAssemblyConfig>(),ConfigPath);
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
-            FloorAssetBuilder.ConfigureLighting();
-            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(FloorAssetBuilder.Root+"/Prefabs/Floor3Environment.prefab");
-            if(prefab==null)throw new InvalidOperationException("Build the floor assets first.");
-            PrefabUtility.InstantiatePrefab(prefab);
-            Directory.CreateDirectory("Assets/Project/Scenes");
-            EditorSceneManager.SaveScene(SceneManager.GetActiveScene(),MainPath);
-            var scenes=EditorBuildSettings.scenes.Where(s=>s.path!=MainPath).ToList();
-            scenes.Add(new EditorBuildSettingsScene(MainPath,false));EditorBuildSettings.scenes=scenes.ToArray();
-            VerifyPreparedMain();
-            Debug.Log("FLOOR_MAIN_PREPARED: geometry and anchors only; Main stays disabled in Build Settings until reviewed assembly.");
+            FullFloorBuilder.PrepareMain();
         }
 
         public static void PrepareAndVerify()
         {
-            FloorAssetBuilder.BuildAll();
+            FullFloorBuilder.Build();
             PrepareMain();
             VerifyPendingAssemblyGate();
         }
@@ -57,8 +45,9 @@ namespace TemporalContract.Environment.EditorTools
 
         public static void VerifyPreparedMain()
         {
-            var anchors=UnityEngine.Object.FindFirstObjectByType<FloorIntegrationAnchors>();
-            if(anchors==null||anchors.rooms.Length!=4||anchors.boardMap==null)throw new InvalidOperationException("Main floor references are incomplete.");
+            var geometry=SceneManager.GetActiveScene().GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<MeshRenderer>(true)).Where(r=>r.name.StartsWith("Source_",StringComparison.Ordinal)).ToArray();
+            if(geometry.Length!=1767)
+                throw new InvalidOperationException("Prepared Main must contain the complete supplied floor.");
             foreach(var root in SceneManager.GetActiveScene().GetRootGameObjects())
                 foreach(var transform in root.GetComponentsInChildren<Transform>(true))
                 {
@@ -67,7 +56,7 @@ namespace TemporalContract.Environment.EditorTools
                         if(behaviour.GetType().FullName.Contains(".Testing."))throw new InvalidOperationException("Test-only code in prepared Main.");
                 }
             if(EditorBuildSettings.scenes.Any(s=>s.path==MainPath&&s.enabled))throw new InvalidOperationException("Prepared Main must stay out of production builds.");
-            Debug.Log("FLOOR_MAIN_PREPARATION_VERIFY_PASS rooms=4 missingScripts=0 testControllers=0 buildEnabled=false");
+            Debug.Log("FLOOR_MAIN_PREPARATION_VERIFY_PASS fullFloorMeshes=1767 missingScripts=0 testControllers=0 buildEnabled=false");
         }
 
         [MenuItem("Temporal Contract/Floor/Assemble Reviewed Subsystems")]
@@ -86,6 +75,8 @@ namespace TemporalContract.Environment.EditorTools
             if(sessionType==null||roundsType==null)throw new InvalidOperationException("Reviewed network and round code is unavailable.");
             foreach(string name in new[]{"Door_Ordinary","Door_Restricted","Keycard","AccessPanel","WallSwitch","Cover_Chair"})
                 if(AssetDatabase.LoadAssetAtPath<GameObject>(InteractionRoot+name+".prefab")==null)throw new InvalidOperationException("Missing interaction prefab: "+name);
+            if(AssetDatabase.LoadAssetAtPath<GameObject>(FloorAssetBuilder.Root+"/Prefabs/Floor3FullEnvironment.prefab")!=null)
+                throw new InvalidOperationException("The legacy four-room assembler is superseded. Complete full-floor production bindings before assembly.");
             string networkScene="Assets/Project/Scenes/NetworkCoreTest.unity";
             if(!File.Exists(networkScene))throw new InvalidOperationException("Network scene/session setup is unavailable.");
             PrepareMain();

@@ -13,8 +13,9 @@ namespace TemporalContract.Environment.EditorTools
         [MenuItem("Temporal Contract/Floor/Build Linux Environment Walkthrough")]
         public static void BuildEnvironmentLinux()
         {
-            FloorAssetBuilder.Verify();
-            Build("environment-only",FloorAssetBuilder.Root+"/Scenes/EnvironmentTest.unity",BuildOptions.Development);
+            string scene=FloorAssetBuilder.Root+"/Scenes/FullFloorInspection.unity";
+            if(!File.Exists(scene))throw new InvalidOperationException("Build the full-floor inspection scene first.");
+            Build("full-floor-inspection",scene,BuildOptions.Development);
         }
         [MenuItem("Temporal Contract/Floor/Build Linux Integrated Release Candidate")]
         public static void BuildIntegratedLinux()

@@ -13,9 +13,9 @@ Read README.md, CONTRIBUTING.md, docs/PROJECT_BRIEF.md, and docs/STATUS.md. Own 
 
 Original assets on this machine: /media/ravitejas/1A21-85E1/PES/SEM 5/Current Stuff/ARVR/Mini Project/3-20261115T095203Z-1-001/3/
 
-Inspect Blender sources and the separate meshes before importing. The lab.obj is approximately 550 MB; inspect complexity rather than assuming it is suitable for runtime. Keep originals untouched. Select one corridor, connected classrooms, and VIP room; preserve recognizable Floor 3 geometry. Check scale, normals, duplicated geometry, missing textures, pivots, and collision. Export cleaned runtime FBX assets with separate interactive doors and furniture. Provide Sanjana an accurate top-view floor layout.
+Inspect Blender sources and the separate meshes before importing. The lab.obj is approximately 550 MB; inspect complexity rather than assuming it is suitable for runtime. Keep originals untouched. Retain the entire supplied floor, all rooms/corridors and existing props. Choose gameplay locations within it; do not crop the layout. Check scale, normals, duplicated geometry, missing textures, pivots, and collision. Export cleaned runtime FBX assets with separate interactive doors and furniture. Provide Sanjana an accurate top-view floor layout.
 
-After agreed LFS setup, add only cleaned runtime assets. Keep raw source outside ordinary Git. Use simple colliders, restrained material/texture sizes, limited dynamic lights and shadows, and room-level static grouping. Block unused routes clearly. Do not merge interactive doors into architecture.
+After agreed LFS setup, add only cleaned runtime assets. Keep raw source outside ordinary Git. Use simple colliders, restrained material/texture sizes, limited dynamic lights and shadows, and room-level static grouping. Do not add artificial corridor blockers to shrink the playable floor. Do not merge interactive doors into architecture.
 
 Create Main.unity after bootstrap. Integrate Samatma's network/player/round foundation, Adhithya's interaction prefabs, and Sanjana's board/UI/feedback prefabs using documented Inspector references. Resolve integration through the relevant owner when code changes are needed.
 

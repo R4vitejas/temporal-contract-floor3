@@ -2,7 +2,17 @@
 
 ## Full-floor scope correction — November 16
 
-Ravitejas requires the entire supplied floor. The four-room export, map and walkthrough in PR #18 and the dependent Main preparation in PR #19 are prototypes that need full-floor revision before acceptance. Their existing validation results apply only to that prototype. The original Blender files remain unchanged. Live Unity MCP setup is being prepared; the full-floor replacement has not yet been built.
+Ravitejas requires the entire supplied floor. The four-room export, map and walkthrough in PR #18 and the dependent Main preparation in PR #19 are prototypes that need full-floor revision before acceptance. Their existing validation results apply only to that prototype. The original Blender files remain unchanged. Live Unity MCP is connected. A separate full-floor inspection scene is now available; Main now uses the full floor; production integration and release acceptance remain pending.
+
+## Full-floor retro revision — November 18
+
+Current local work on `feature/floor-integration` preserves every source mesh (1,767/1,767) and the entire layout. The original assignment specifies a retro, low-poly aesthetic. The revised floor uses a consistent muted palette and point-filtered pixel textures. Simplifying 545 detailed props reduces the imported mesh count from 11,131,473 to 2,405,273 triangles without removing objects or changing architecture. Original Blender files remain untouched.
+
+`FullFloorInspection.unity` contains architecture collision, simple furniture/window boxes, and doors held open for inspection. The doorway sticking issue was reproduced: the default 0.3 m step offset lifted the test capsule into low lintels. At 0.05 m step offset, all six named classroom entrances passed in both directions (12/12) in Play Mode and the headless Linux standalone. This verifies the independent 1.8 m/radius 0.3 m test player; the production capsule still needs coordination with Samatma.
+
+The complete labelled map and pixel click regions are in `Environment/Data/FullFloorMap.png` and `full-floor-map-regions.json`. Main now uses the full-floor prefab with proposed gameplay markers and lighting; it remains disabled for production builds and has no test controller. The legacy four-room assembly is blocked. Full production bindings, shared interactions, round/reset integration and final performance remain pending; #12–#14 are not closed.
+
+The Linux inspection build is at `Builds/Floor3-full-floor-inspection-Linux/Floor3.x86_64`. Build success and 12/12 standalone doorway traversal are observed. No match/FPS/two-laptop acceptance is claimed. The real two-laptop hotspot test is deferred to the next team meeting, when hardware details are available.
 
 ## Foundation and subsystem review
 

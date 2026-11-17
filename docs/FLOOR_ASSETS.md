@@ -1,3 +1,5 @@
+> **November 18: full-floor revision.** The four-room pipeline below is superseded. Open `Assets/Project/Environment/Scenes/FullFloorInspection.unity` for the complete supplied floor. See [FULL_FLOOR_INSPECTION.md](FULL_FLOOR_INSPECTION.md) for current setup and limitations.
+
 # Floor 3 runtime assets
 
 Owner: Ravitejas. Issue #12. Branch `feature/floor-assets`.
