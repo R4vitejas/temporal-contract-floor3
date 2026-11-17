@@ -75,6 +75,13 @@ InteractionLifecycle.ResetAll(new RoundResetContext(roundIndex, matchId));
 InteractionLifecycle.OnPlayerDied(clientId);
 ```
 
+- **These three names are a contract.** `RoundCoordinator` on `feature/combat` finds
+  `TemporalContract.Interactions.InteractionLifecycle` by reflection and calls `BindRoleProvider`,
+  `ResetAll` and `OnPlayerDied` by name. Do not rename them or change their parameter types without
+  changing the coordinator in the same PR.
+- **Optional hardening:** `InteractionLifecycle.BindActorEligibility(Func<ulong,bool>)` lets the host
+  refuse interaction requests from a client that is dead or outside an active round. Unbound means
+  allowed (the client router already blocks input then). The coordinator does not call it yet.
 - **Unbound provider denies.** Until `BindRoleProvider` is called, nobody may use attacker-only
   actions (keycard pickup). A missing provider never silently makes both players attackers.
   `InteractionRoleGate.AllowAllWhenUnbound` is test-only and must stay false in shipped code.

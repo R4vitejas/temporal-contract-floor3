@@ -104,6 +104,11 @@ namespace TemporalContract.Interactions
                 return Deny("no player object for sender");
             }
 
+            if (!InteractionRoleGate.CanActorInteract(request.ActorClientId))
+            {
+                return Deny("actor cannot interact right now");
+            }
+
             float maxSqr = serverMaxDistance * serverMaxDistance;
             if ((player.transform.position - InteractionOrigin).sqrMagnitude > maxSqr)
             {

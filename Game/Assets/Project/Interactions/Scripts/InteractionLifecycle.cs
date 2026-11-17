@@ -18,6 +18,15 @@ namespace TemporalContract.Interactions
         }
 
         /// <summary>
+        /// Optional: bind a host-side check for "may this client interact right now" (alive, round active).
+        /// While unbound every spawned player may interact; the client router already blocks input.
+        /// </summary>
+        public static void BindActorEligibility(Func<ulong, bool> canInteract)
+        {
+            InteractionRoleGate.IsActorEligible = canInteract;
+        }
+
+        /// <summary>
         /// Round boundary: restores every interaction to its baseline (doors closed and locked-by-default,
         /// card uncollected, panel not granted, lights default, cover at baseline and released).
         /// Safe to call repeatedly with the same or a new context.

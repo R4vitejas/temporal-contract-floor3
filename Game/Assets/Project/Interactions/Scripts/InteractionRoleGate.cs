@@ -19,6 +19,14 @@ namespace TemporalContract.Interactions
         /// <summary>TEST ONLY. Lets every client act as attacker while no provider is bound.</summary>
         public static bool AllowAllWhenUnbound;
 
+        /// <summary>
+        /// Optional host-side gate: false means this client may not interact right now (dead, between
+        /// rounds, in a menu). Unbound = allowed, because the match coordinator owns that state.
+        /// </summary>
+        public static Func<ulong, bool> IsActorEligible;
+
+        public static bool CanActorInteract(ulong clientId) => IsActorEligible == null || IsActorEligible(clientId);
+
         public static bool IsBound => IsAttacker != null;
 
         public static bool CanActAsAttacker(ulong clientId)
@@ -30,6 +38,7 @@ namespace TemporalContract.Interactions
         private static void ResetStatics()
         {
             IsAttacker = null;
+            IsActorEligible = null;
             AllowAllWhenUnbound = false;
         }
     }
