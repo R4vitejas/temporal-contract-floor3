@@ -19878,19 +19878,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5712775005328134786, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
     - target: {fileID: -4093680343358946776, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
     - target: {fileID: -3679504680181532508, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
     - target: {fileID: -2599103980023218738, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
     - target: {fileID: 919132149155446097, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: m_Name
@@ -19898,11 +19898,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3057718244190546400, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
     - target: {fileID: 5276028178367581288, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value: 
+      value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

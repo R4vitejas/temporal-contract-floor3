@@ -3873,7 +3873,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3360cc9d60a8c17b480ab4c19ba3c662, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Environment.FloorIntegrationAnchors
   attackerSpawn: {fileID: 1083018142317284106}
   defenderSpawn: {fileID: 5649425514825576463}

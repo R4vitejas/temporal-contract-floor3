@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: FloorAssemblyConfig
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Environment.FloorAssemblyConfig
   subsystemReviewsAccepted: 0
-  networkCommit: 
-  interactionCommit: 
-  presentationCommit: 
+  networkCommit:
+  interactionCommit:
+  presentationCommit:
   presentationPrefab: {fileID: 0}
   presentationBindingsVerified: 0

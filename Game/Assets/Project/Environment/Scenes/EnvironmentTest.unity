@@ -236,7 +236,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9dd582f9088b73cc2886f3d8e2231cac, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Environment.Testing.EnvironmentWalkthrough
   view: {fileID: 2107996014}
 --- !u!143 &743458233
