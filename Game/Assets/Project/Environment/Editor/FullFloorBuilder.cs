@@ -125,10 +125,20 @@ namespace TemporalContract.Environment.EditorTools
             RenderSettings.ambientMode=AmbientMode.Flat;RenderSettings.ambientLight=new Color(.57f,.60f,.64f);
             var sun=new GameObject("Floor daylight").AddComponent<Light>();sun.type=LightType.Directional;sun.intensity=.8f;sun.color=new Color(1f,.91f,.76f);sun.shadows=LightShadows.None;sun.transform.rotation=Quaternion.Euler(55f,-35f,0f);
             var markers=new GameObject("Proposed gameplay locations - production binding pending").transform;
-            FloorAssetBuilder.Marker(markers,"Attacker spawn proposal",new Vector3(11.02f,.1f,-7f));
-            FloorAssetBuilder.Marker(markers,"Defender spawn proposal",new Vector3(-44.98f,.1f,-15f));
+            FloorAssetBuilder.Marker(markers,"Attacker spawn proposal",new Vector3(11.02f,.1f,-7f)).rotation=Quaternion.Euler(0,270f,0);
+            FloorAssetBuilder.Marker(markers,"Defender spawn proposal",new Vector3(-46.15f,.1f,-16.77f)).rotation=Quaternion.Euler(0,90f,0);
             FloorAssetBuilder.Marker(markers,"VIP staff cabin proposal",new Vector3(-49.98f,.1f,-14.5f));
             FloorAssetBuilder.Marker(markers,"Keycard proposal",new Vector3(-18.98f,.8f,-9f));
+            Physics.SyncTransforms();
+            foreach(string name in new[]{"Attacker spawn proposal","Defender spawn proposal","VIP staff cabin proposal"})
+            {
+                Vector3 p=markers.Find(name).position;
+                if(Physics.OverlapCapsule(p+Vector3.up*.31f,p+Vector3.up*1.49f,.3f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore).Length>0)
+                    throw new InvalidOperationException("Gameplay marker overlaps geometry: "+name);
+                RaycastHit ground;
+                if(!Physics.Raycast(p+Vector3.up,Vector3.down,out ground,2f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))
+                    throw new InvalidOperationException("Gameplay marker has no floor: "+name);
+            }
             const string path="Assets/Project/Scenes/Main.unity";
             EditorSceneManager.SaveScene(scene,path);
             var settings=EditorBuildSettings.scenes.Where(s=>s.path!=path).ToList();settings.Add(new EditorBuildSettingsScene(path,false));EditorBuildSettings.scenes=settings.ToArray();

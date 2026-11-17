@@ -20,3 +20,7 @@ Collision is baked from geometry, including walls stored under `Wall`/`Cube` nam
 - Final acceptance requires the real player, all shared interactions, combat/round/reset/rematch/disconnect, one local listener/camera, and full-game performance. Two laptops on the hotspot are the last acceptance step at the next team meeting.
 
 The independent collision/performance reports describe environment-only coverage. They do not certify multiplayer or every possible continuous player position.
+
+## Checked candidate locations (Unity coordinates)
+
+The attacker candidate is `(11.02, 0.1, -7)`, defender `(-46.15, 0.1, -16.77)`, and VIP staff-cabin candidate `(-49.98, 0.1, -14.5)`. All three have floor support and no overlap for the independent 1.8 m/radius 0.3 m capsule. Main preparation asserts these checks and refuses an overlapping or unsupported marker. The defender marker was moved out of a source wall. These are candidate coordinates for the owner's round/session API, not changes to hardcoded production spawns.
