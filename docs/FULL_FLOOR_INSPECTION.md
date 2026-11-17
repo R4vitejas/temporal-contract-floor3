@@ -28,7 +28,7 @@ Next integration work: choose and label gameplay locations within the whole floo
 
 ## Doorway correction and local build
 
-The original default 0.3 m CharacterController step offset lifted the inspection capsule into low source lintels and stopped forward motion. The inspection player now uses step offset 0.05 m and skin width 0.03 m. The 1.8 m/radius 0.3 m capsule passed all six named classroom entrances in both directions (12/12) in Play Mode and the Linux standalone smoke test. This does not change or certify Samatma's production player settings.
+The original default 0.3 m CharacterController step offset lifted the inspection capsule into low source lintels and stopped forward motion. The initial correction used a 0.05 m step baseline and 0.03 m skin width. The current collision revision adapts the step allowance to headroom, up to 0.32 m, as described below. The 1.8 m/radius 0.3 m capsule passed all six named classroom entrances in both directions (12/12) in Play Mode and the Linux standalone smoke test. This does not change or certify Samatma's production player settings.
 
 Build through **Temporal Contract → Floor → Build Linux Environment Walkthrough**. The current output is `Builds/Floor3-full-floor-inspection-Linux/Floor3.x86_64`; it contains the full-floor inspection scene. Automated standalone check: `Floor3.x86_64 -batchmode -nographics --full-floor-smoke-test` (expects exit 0 and `FULL_FLOOR_STANDALONE_PASS`). Run without those arguments for manual inspection.
 

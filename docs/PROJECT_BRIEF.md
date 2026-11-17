@@ -4,6 +4,10 @@
 
 Environmental interactions on the supplied Floor 3 model are the main assessment focus. Keep two-player desktop LAN multiplayer and clear audio/UI/lighting feedback. Use the entire supplied Floor 3 layout in the runtime scene. Refine materials, collision, organization and performance while preserving all rooms, corridors and recognizable architecture. Retain existing source props unless a specific removal is agreed with Ravitejas. Do not crop the layout or add artificial corridor blockers to reduce the playable area. Originals remain unchanged; designate a VIP room and gameplay locations within the full floor.
 
+## Art direction
+
+Follow the original assignment’s retro, low-poly aesthetic. Use a restrained palette, simple pixel-style materials and clear room landmarks while retaining the full supplied floor layout and recognizable furniture.
+
 ## Required interactions
 
 1. Doors: look at an ordinary door, press E, open/close with collision and positional sound. One restricted door requires a keycard.
