@@ -1,0 +1,15 @@
+{
+    "wallRays": 7646,
+    "wallRayFailures": 0,
+    "wallApproaches": 251,
+    "wallEscapeFailures": 0,
+    "wallCrossings": 0,
+    "slides": 158,
+    "slideFailures": 0,
+    "gridGroundPoints": 2977,
+    "gridClearEdges": 4986,
+    "gridBlockedEdges": 22,
+    "gridMovementFailures": 0,
+    "failures": [],
+    "passed": true
+}

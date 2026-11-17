@@ -1,3 +1,5 @@
+> **Full-floor revision:** the old four-room assembler below is superseded and blocked. Main now uses the entire retro floor and baked collision. See [FULL_FLOOR_HANDOFF.md](FULL_FLOOR_HANDOFF.md) for current production dependencies and [FULL_FLOOR_INSPECTION.md](FULL_FLOOR_INSPECTION.md) for movement/collision evidence.
+
 # Floor 3 main-scene integration
 
 Owner: Ravitejas. Issue #13. Branch `feature/floor-integration`, stacked on the floor-assets PR #18.

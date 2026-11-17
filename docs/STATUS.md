@@ -14,6 +14,14 @@ The complete labelled map and pixel click regions are in `Environment/Data/FullF
 
 The Linux inspection build is at `Builds/Floor3-full-floor-inspection-Linux/Floor3.x86_64`. Build success and 12/12 standalone doorway traversal are observed. No match/FPS/two-laptop acceptance is claimed. The real two-laptop hotspot test is deferred to the next team meeting, when hardware details are available.
 
+## Collision acceptance revision — November 18
+
+The local full-floor collision pass was rebuilt after reported wall pass-through and sticking. Geometry now supplies both sides of thin surfaces, missed wall objects and separate furniture pieces. The inspection controller separates gravity from horizontal movement and adapts step height to available headroom. Three source entrances are refined only in runtime exports.
+
+Play Mode passes: 7,646 wall probes; 251 approach/return cases; 158 slides; 4,986 clear floor-grid edges; 48 entrance approach/return cases covering all 24 named doors. No failure remains in these sampled cases. Two toilet cubicles use shorter clear endpoints before their fixtures; the checks do not require crossing a solid toilet. The final Linux standalone repeats both the full wall/grid audit and 48 entrance checks successfully. Rendered 720p view averages are 47.1–82.5 FPS on the local Intel GPU; p99 frame times are 18.6–33.4 ms. This is an environment benchmark with other applications open, not full-game or weaker-laptop acceptance.
+
+Full-floor production handoff: [FULL_FLOOR_HANDOFF.md](FULL_FLOOR_HANDOFF.md). Production capsule/spawn integration and Sanjana's published board/HUD/feedback prefab remain actual dependencies; the local floor audit does not close #13/#14 or certify multiplayer.
+
 ## Foundation and subsystem review
 
 - Bootstrap PR #2 is merged on main: Unity 6000.6.8f1, pinned runtime packages, contracts and router.

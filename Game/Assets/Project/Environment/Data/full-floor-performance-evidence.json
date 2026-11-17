@@ -1,0 +1,33 @@
+{
+  "scope": "Environment-only rendered standalone; Editor and other applications open. No multiplayer or second-laptop acceptance.",
+  "resolution": [
+    1280,
+    720
+  ],
+  "gpu": "Mesa Intel UHD Graphics (ICL GT1)",
+  "warmupFramesPerView": 60,
+  "sampleFramesPerView": 180,
+  "vsync": false,
+  "views": [
+    {
+      "view": "corridor",
+      "averageFps": 82.5,
+      "p99FrameMs": 18.6
+    },
+    {
+      "view": "seminar",
+      "averageFps": 57.4,
+      "p99FrameMs": 23.8
+    },
+    {
+      "view": "classroom",
+      "averageFps": 47.9,
+      "p99FrameMs": 33.4
+    },
+    {
+      "view": "lab",
+      "averageFps": 47.1,
+      "p99FrameMs": 33.2
+    }
+  ]
+}

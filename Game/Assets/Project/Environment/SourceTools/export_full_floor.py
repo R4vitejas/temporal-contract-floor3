@@ -5,6 +5,7 @@ Copy the completed Models, Textures and Data folders into Environment after expo
 """
 import argparse
 import bpy
+import bmesh
 import hashlib
 import json
 from pathlib import Path
@@ -25,6 +26,54 @@ origin = Vector((38.98, -1, 0))
 objects = sorted((o for o in bpy.data.objects if o.type == 'MESH'), key=lambda o: o.name)
 materials = sorted({m for o in objects for m in o.data.materials if m}, key=lambda m: m.name)
 textures = {}
+# Fix three source entrances whose frame openings are smaller than the inspection capsule.
+# These changes exist only in the exported working scene; the original .blend is never saved.
+entrance_adjustments=[]
+original_world={obj:obj.matrix_world.copy() for obj in objects}
+for obj in objects:
+    obj.parent=None
+    obj.matrix_world=original_world[obj]
+for name,minimum_width,minimum_height in [('Door.012',1.05,2.2),('Door.014',1.10,2.2),('Door.024',1.3114,2.3)]:
+    door=bpy.data.objects.get(name)
+    if not door:continue
+    corners=[door.matrix_world@Vector(v) for v in door.bound_box]
+    lo=Vector([min(v[i] for v in corners) for i in range(3)])
+    hi=Vector([max(v[i] for v in corners) for i in range(3)])
+    width_axis=0 if hi.x-lo.x>hi.y-lo.y else 1
+    depth_axis=1-width_axis
+    center=(lo+hi)*.5
+    pivot=center.copy();pivot.z=lo.z
+    scale=Vector((1,1,1));scale[width_axis]=max(1,minimum_width/(hi[width_axis]-lo[width_axis]));scale.z=max(1,minimum_height/(hi.z-lo.z))
+    transform=Matrix.Translation(pivot)@Matrix.Diagonal((*scale,1))@Matrix.Translation(-pivot)
+    suffix=name[len('Door'):]
+    for obj in objects:
+        if obj==door or obj.name in ['Handle_Front'+suffix,'Handle_Back'+suffix]:obj.matrix_world=transform@obj.matrix_world
+    cut_lo=lo.copy();cut_hi=hi.copy()
+    cut_lo[width_axis]=center[width_axis]-max(minimum_width,hi[width_axis]-lo[width_axis])*.5+.06
+    cut_hi[width_axis]=center[width_axis]+max(minimum_width,hi[width_axis]-lo[width_axis])*.5-.06
+    depth=.95 if name=='Door.024' else .25
+    cut_lo[depth_axis]=center[depth_axis]-depth;cut_hi[depth_axis]=center[depth_axis]+depth
+    cut_lo.z=lo.z-.08;cut_hi.z=lo.z+minimum_height-.05
+    changed=[]
+    for obj in objects:
+        if not (obj.name.startswith(('Plane','Wall')) or name=='Door.024' and obj.name=='Cube.391'):continue
+        bounds=[obj.matrix_world@Vector(v) for v in obj.bound_box]
+        if any(max(v[i] for v in bounds)<cut_lo[i] or min(v[i] for v in bounds)>cut_hi[i] for i in range(3)):continue
+        mesh=obj.data.copy();mesh.transform(obj.matrix_world)
+        bm=bmesh.new();bm.from_mesh(mesh)
+        for axis in range(3):
+            normal=Vector((0,0,0));normal[axis]=1
+            for coordinate in (cut_lo[axis],cut_hi[axis]):
+                point=Vector((0,0,0));point[axis]=coordinate
+                bmesh.ops.bisect_plane(bm,geom=list(bm.verts)+list(bm.edges)+list(bm.faces),plane_co=point,plane_no=normal,dist=.00001)
+        remove=[f for f in bm.faces if abs(f.normal.z)<.5 and all(cut_lo[i]-.00001<=f.calc_center_median()[i]<=cut_hi[i]+.00001 for i in range(3))]
+        if remove:
+            bmesh.ops.delete(bm,geom=remove,context='FACES');bm.to_mesh(mesh);mesh.transform(obj.matrix_world.inverted());obj.data=mesh;changed.append(obj.name)
+        else:bpy.data.meshes.remove(mesh)
+        bm.free()
+    entrance_adjustments.append({'door':name,'originalMin':list(lo),'originalMax':list(hi),'runtimeWidth':minimum_width,'runtimeHeight':minimum_height,'wallMeshesRefined':changed})
+bpy.context.view_layer.update()
+
 material_records = []
 missing = []
 
@@ -94,7 +143,7 @@ for obj in objects:
                 modifier.show_viewport = False
                 modifier.show_render = False
         triangles = records[-1]['baseTriangles']
-        architectural = original_name.lower().startswith(('plane', 'floor', 'roof', 'pathway', 'door'))
+        architectural = original_name.lower().startswith(('plane', 'floor', 'roof', 'pathway', 'door')) or original_name=='Cube.391'
         if triangles > 10000 and not architectural:
             size = max(records[-1]['max'][i] - records[-1]['min'][i] for i in range(3))
             target = 1500 if size < 2 else 5000
@@ -145,7 +194,7 @@ bpy.ops.export_scene.fbx(filepath=str(out/'Models'/'Floor3Full.fbx'),use_selecti
     apply_unit_scale=True,bake_space_transform=True,use_mesh_modifiers=True,
     mesh_smooth_type='FACE',use_triangles=True,add_leaf_bones=False,bake_anim=False,path_mode='STRIP')
 report={'source':source.name,'sourceOrigin':list(origin),'sourceUnits':'metres',
-    'lowPoly':a.low_poly,
+    'lowPoly':a.low_poly,'entranceAdjustments':entrance_adjustments,
     'meshObjectCount':len(objects),'baseTriangles':sum(r['baseTriangles'] for r in records),
     'objects':records,'materials':material_records,'missingImages':missing,
     'scope':'Entire source floor; no clipping, removal of props or corridor blockers.',

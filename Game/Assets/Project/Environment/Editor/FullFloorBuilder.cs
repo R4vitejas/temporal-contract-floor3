@@ -32,7 +32,7 @@ namespace TemporalContract.Environment.EditorTools
             var importer = (ModelImporter)AssetImporter.GetAtPath(Model);
             if (importer == null) throw new InvalidOperationException("Import Floor3Full.fbx first.");
             importer.importAnimation = false; importer.importCameras = false; importer.importLights = false;
-            importer.addCollider = false; importer.isReadable = false;
+            importer.addCollider = false; importer.isReadable = true;
             // All source materials map into the agreed retro palette; geometry remains separate.
             foreach (var group in manifest.materials.GroupBy(RetroFloorStyle.Key))
             {
@@ -57,11 +57,9 @@ namespace TemporalContract.Environment.EditorTools
             var b = renderers.First(r => r.name == "Source_Plane.036");
             if (b.bounds.center.z < a.bounds.center.z) model.transform.rotation = Quaternion.Euler(0f,180f,0f);
             var lookup = manifest.objects.ToDictionary(o => o.runtime);
-            int meshColliders = 0;
             var wallMaterial = RetroFloorStyle.Material("Wall");
             var floorMaterial = RetroFloorStyle.Material("Floor");
-            var furnitureCollision = new GameObject("Furniture collision").transform;
-            furnitureCollision.SetParent(root.transform,false);
+
             foreach (var renderer in renderers)
             {
                 SourceObject source;
@@ -71,25 +69,11 @@ namespace TemporalContract.Environment.EditorTools
                     renderer.sharedMaterials = Enumerable.Repeat(floorMaterial, renderer.sharedMaterials.Length).ToArray();
                 else if(renderer.sharedMaterials.Any(m => m == null))
                     renderer.sharedMaterials = renderer.sharedMaterials.Select(m => m ? m : wallMaterial).ToArray();
-                // Architecture keeps its exact openings. High-detail fixtures have no collision in this first inspection.
-                if ((n.StartsWith("plane") || n.StartsWith("floor") || n == "pathway" || n.StartsWith("roof")) && source.baseTriangles < 20000)
-                {
-                    var filter = renderer.GetComponent<MeshFilter>();
-                    if (filter && filter.sharedMesh) { renderer.gameObject.AddComponent<MeshCollider>().sharedMesh = filter.sharedMesh; meshColliders++; }
-                }
-                var bounds=renderer.bounds;
-                bool furniture = !n.StartsWith("plane") && !n.StartsWith("floor") && !n.StartsWith("roof") && !n.StartsWith("door") &&
-                    !n.StartsWith("handle") && !n.Contains("socket") && !n.Contains("window") && n!="pathway" &&
-                    bounds.min.y>=-.15f && bounds.min.y<=.15f && bounds.max.y>.3f && bounds.max.y<2.5f &&
-                    bounds.size.x>.15f && bounds.size.z>.15f && Mathf.Max(bounds.size.x,bounds.size.z)<8f;
-                bool window=renderer.sharedMaterials.Any(m=>m && m.name=="Retro_Glass") && bounds.size.y>.2f;
-                if(furniture || window)
-                {
-                    var obstacle=new GameObject("Collision - "+source.source);
-                    obstacle.transform.SetParent(furnitureCollision,false);obstacle.transform.position=bounds.center;
-                    var box=obstacle.AddComponent<BoxCollider>();box.size=new Vector3(Mathf.Max(.03f,bounds.size.x),Mathf.Max(.03f,bounds.size.y),Mathf.Max(.03f,bounds.size.z));
-                }
             }
+            Directory.CreateDirectory(Root+"/Collision");
+            AssetDatabase.Refresh();
+            FullFloorCollisionBuilder.Build(root,renderers);
+
             var player = new GameObject("Full floor inspection player");
             player.transform.position = new Vector3(-2.5f,.1f,-8f);
             var body = player.AddComponent<CharacterController>();
@@ -103,9 +87,7 @@ namespace TemporalContract.Environment.EditorTools
             camera.gameObject.AddComponent<AudioListener>();
             var walk = player.AddComponent<EnvironmentWalkthrough>(); walk.view = camera;
             walk.homePosition = player.transform.position;
-            var probes=manifest.objects.Where(o=>o.source.StartsWith("Door.",StringComparison.Ordinal)&&o.collections.Any(c=>c.StartsWith("ClassRoom",StringComparison.Ordinal))).ToArray();
-            walk.doorwayProbes=probes.Select(d=>new Vector3((d.min[0]+d.max[0])*.5f-38.98f,.08f,(d.min[1]+d.max[1])*.5f+1f)).ToArray();
-            walk.doorwayDirections=probes.Select(d=>d.max[0]-d.min[0]>d.max[1]-d.min[1]?Vector3.forward:Vector3.right).ToArray();
+            ConfigureEntranceProbes(walk,manifest);
             walk.instructions = "FULL FLOOR INSPECTION · WASD / mouse · Esc cursor · Home respawn\nRetro floor preview · doors held open · multiplayer interactions are tested separately.";
             Directory.CreateDirectory(Root + "/Scenes");
             Directory.CreateDirectory(Root + "/Prefabs");
@@ -117,9 +99,19 @@ namespace TemporalContract.Environment.EditorTools
             var importedNames = new HashSet<string>(renderers.Select(r => r.name));
             if (!sourceNames.SetEquals(importedNames)) throw new InvalidOperationException("Full-floor mesh preservation check failed.");
             long triangles = model.GetComponentsInChildren<MeshFilter>().Sum(f => Enumerable.Range(0, f.sharedMesh.subMeshCount).Sum(i => (long)f.sharedMesh.GetIndexCount(i) / 3));
-            Debug.Log($"FULL_FLOOR_INSPECTION_PASS: {renderers.Length}/{manifest.meshObjectCount} source meshes retained, {triangles} imported triangles, {meshColliders} architecture colliders. No cropping or corridor blockers. Gameplay/prop collision/performance pending.");
+            Debug.Log($"FULL_FLOOR_INSPECTION_PASS: {renderers.Length}/{manifest.meshObjectCount} source meshes retained, {triangles} imported triangles, baked collision surfaces and walls. No cropping or corridor blockers. Gameplay/prop collision/performance pending.");
             AssetDatabase.SaveAssets();
+            importer.isReadable=false;
+            importer.SaveAndReimport();
 
+        }
+        public static void ConfigureEntranceProbes(EnvironmentWalkthrough walk,Manifest manifest)
+        {
+            walk.entrances=manifest.objects.Where(d=>d.source.StartsWith("Door.",StringComparison.Ordinal)).Select(d=>new EnvironmentWalkthrough.EntranceProbe {
+                source=d.source,threshold=new Vector3((d.min[0]+d.max[0])*.5f-38.98f,.08f,(d.min[1]+d.max[1])*.5f+1f),
+                direction=d.max[0]-d.min[0]>d.max[1]-d.min[1]?Vector3.forward:Vector3.right,
+                lowDistance=d.source=="Door.012"?.2f:.6f,highDistance=d.source=="Door.014"?.2f:.6f
+            }).ToArray();
         }
         [MenuItem("Temporal Contract/Floor/Prepare Full Floor Main")]
         public static void PrepareMain()
