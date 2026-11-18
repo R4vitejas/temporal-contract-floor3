@@ -268,11 +268,12 @@ namespace TemporalContract.Interactions
                 return;
             }
 
-            // Try, in order: straight down from the carry point, then a ring around the holder's feet
-            // (the carry point may be inside a wall), and finally the baseline pose.
+            // Same rules as a manual placement (valid surface, no overlap, and the holder could reach
+            // the spot without a wall in between), tried at: the carry point, then a ring around the
+            // holder's feet. Disconnect has no holder, so only surface and overlap apply there.
             Quaternion rotation = transform.rotation;
-            var candidates = new List<Vector3> { transform.position };
             NetworkObject holder = FindPlayer(clientId);
+            var candidates = new List<Vector3> { transform.position };
             if (holder != null)
             {
                 Vector3 feet = holder.transform.position;
@@ -283,14 +284,13 @@ namespace TemporalContract.Interactions
                 candidates.Add(feet - holder.transform.right * 0.9f);
             }
 
+            Vector3 eye = holder != null ? holder.transform.position + Vector3.up * eyeHeight : default;
+            Vector3 target = default;
             bool placed = false;
             foreach (Vector3 candidate in candidates)
             {
-                if (TryFindSurface(candidate + Vector3.up * 0.5f, out RaycastHit surface)
-                    && surface.normal.y >= minSurfaceNormalY
-                    && !OverlapsBlockers(surface.point, rotation))
+                if (TryValidDropPoint(candidate, rotation, holder != null, eye, out target))
                 {
-                    transform.SetPositionAndRotation(surface.point, rotation);
                     placed = true;
                     break;
                 }
@@ -298,10 +298,62 @@ namespace TemporalContract.Interactions
 
             if (!placed)
             {
-                transform.SetPositionAndRotation(baselinePosition, baselineRotation);
+                // Fall back to the baseline, but never onto an occupied spot: search a ring around it.
+                placed = TryFindFreeSpotNear(baselinePosition, baselineRotation, out target);
+                rotation = baselineRotation;
+                if (!placed)
+                {
+                    target = baselinePosition;
+                    Debug.LogWarning($"[{name}] no free drop spot found; restoring exact baseline.", this);
+                }
             }
 
+            transform.SetPositionAndRotation(target, rotation);
             holderClientId.Value = NoHolder;
+        }
+
+        private bool TryValidDropPoint(Vector3 around, Quaternion rotation, bool checkReach, Vector3 eye,
+            out Vector3 point)
+        {
+            point = default;
+            if (!TryFindSurface(around + Vector3.up * 0.5f, out RaycastHit surface)
+                || surface.normal.y < minSurfaceNormalY
+                || OverlapsBlockers(surface.point, rotation))
+            {
+                return false;
+            }
+
+            if (checkReach && IsSegmentBlocked(eye, surface.point + Vector3.up * 0.3f))
+            {
+                return false;
+            }
+
+            point = surface.point;
+            return true;
+        }
+
+        private bool TryFindFreeSpotNear(Vector3 center, Quaternion rotation, out Vector3 point)
+        {
+            if (TryValidDropPoint(center, rotation, false, default, out point))
+            {
+                return true;
+            }
+
+            foreach (float radius in new[] { 0.6f, 1.2f, 1.8f })
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    float angle = i * Mathf.PI / 4f;
+                    Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+                    if (TryValidDropPoint(center + offset, rotation, false, default, out point))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            point = default;
+            return false;
         }
 
         private void OnClientDisconnected(ulong clientId) => ReleaseIfHeldBy(clientId);

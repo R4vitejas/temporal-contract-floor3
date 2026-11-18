@@ -93,18 +93,14 @@ InteractionLifecycle.OnPlayerDied(clientId);
 - Reset restores: doors closed and locked-by-default, keycard uncollected, panel not granted,
   switches to their default, cover back at baseline and released. It sets state rather than
   toggling, so repeating the same context is harmless.
-- Death or disconnect drops held cover at the first valid spot among: under the carry point, then a
-  ring around the holder's feet, then the baseline pose. The holder lock is always cleared, so the
-  object can be picked up again.
-- The player prefab needs a `NetworkObject` and a non-trigger collider (a `CharacterController`
-  is fine). Door-close safety and cover placement detect players with
-  `NetworkObject.IsPlayerObject` on a hit collider.
-- Players must have an `InteractionRouter` (your component) and an `IInteractionActor`.
-  Interactions read nothing else from the player.
-- `Core/Contracts.meta` is rewritten by Unity every time the project is imported. Commit the
-  version Unity writes so it stops showing as modified.
-- Unity rewrites `Assets/DefaultNetworkPrefabs.asset` locally when prefabs with a `NetworkObject`
-  exist. Interaction prefabs are placed in the scene, not spawned at runtime.
+- Death or disconnect drops held cover under the same rules as a manual placement: a valid
+  surface, no overlap with walls/furniture/players, and (when the holder still exists) no wall
+  between the holder's eyes and the spot. Candidates are the carry point, then a ring around the
+  holder's feet. If none qualifies it falls back to the baseline pose, but searches a ring around the
+  baseline for a free spot first so it is never dropped onto an occupied one (only if no free spot
+  exists at all does it use the exact baseline and log a warning). The holder lock is always cleared,
+  so the object can be picked up again. A round reset, by contrast, restores the exact baseline
+  because players are respawned at the same boundary.
 
 ### Ravitejas (floor, main scene, integration)
 - Place the prefabs in `Main.unity`; swap the placeholder meshes for the real door/furniture meshes.
@@ -155,7 +151,11 @@ Host + client was run by Adhithya with two instances of `InteractionsTest.unity`
 | Simultaneous keycard pickup | n/a | observed: one winner, loser denied with reason (retested after finding 2) |
 | Door will not close on another player | n/a | reported OK, not itemised |
 | Attacker-only card with roles (`T`/`Y`), `U` unbind, `V` repeat reset | PENDING | observed (retest run) |
-| Requester-only denial feedback, positional feedback identity | PENDING | PENDING (denial now shows its reason in the on-screen log) |
+| Door refuses to close while another player stands in the doorway | n/a | PENDING (explicit test requested) |
+| Requester-only denial feedback: only the denied player's log shows it | n/a | PENDING (explicit test requested) |
+| Feedback event `obj` id equals the interaction's NetworkObjectId on both screens | n/a | PENDING (explicit test requested) |
+| `K` while the carry point is inside a wall: cover lands on a reachable spot | n/a | PENDING (explicit test requested) |
+| Client disconnects while holding cover: host can pick it up afterwards | n/a | PENDING (explicit test requested) |
 
 Findings from the host + client run:
 
