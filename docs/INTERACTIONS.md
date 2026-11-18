@@ -150,12 +150,12 @@ Host + client was run by Adhithya with two instances of `InteractionsTest.unity`
 | `K` drops held cover (simulated death) | observed | observed |
 | Simultaneous keycard pickup | n/a | observed: one winner, loser denied with reason (retested after finding 2) |
 | Door will not close on another player | n/a | reported OK, not itemised |
-| Attacker-only card with roles (`T`/`Y`), `U` unbind, `V` repeat reset | PENDING | observed (retest run) |
-| Door refuses to close while another player stands in the doorway | n/a | PENDING (explicit test requested) |
-| Requester-only denial feedback: only the denied player's log shows it | n/a | PENDING (explicit test requested) |
-| Feedback event `obj` id equals the interaction's NetworkObjectId on both screens | n/a | PENDING (explicit test requested) |
-| `K` while the carry point is inside a wall: cover lands on a reachable spot | n/a | PENDING (explicit test requested) |
-| Client disconnects while holding cover: host can pick it up afterwards | n/a | PENDING (explicit test requested) |
+| Attacker-only card with roles (`T`/`Y`), `U` unbind, `V` repeat reset | n/a | observed (retest run) |
+| Door refuses to close while another player stands in the doorway | n/a | observed |
+| Requester-only denial feedback: only the denied player's log shows it | n/a | observed |
+| Feedback event `obj` id equals the interaction's NetworkObjectId on both screens | n/a | observed |
+| `K` while the carry point is inside a wall: cover lands on a reachable spot | n/a | observed |
+| Client disconnects while holding cover: host can pick it up afterwards | n/a | observed |
 
 Findings from the host + client run:
 
