@@ -22,12 +22,16 @@ Play Mode passes: 7,646 wall probes; 251 approach/return cases; 158 slides; 4,98
 
 Full-floor production handoff: [FULL_FLOOR_HANDOFF.md](FULL_FLOOR_HANDOFF.md). Production capsule/spawn integration and Sanjana's published board/HUD/feedback prefab remain actual dependencies; the local floor audit does not close #13/#14 or certify multiplayer.
 
+## Adhithya review update — November 18
+
+PR #16 advanced to `22c8b32`, adding the missing author-reported host/client evidence and improving normal forced-drop validation. Independent isolated import/compilation passed. A host-only Play Mode regression still places released cover inside an obstruction when every fallback candidate is blocked; the exact-baseline branch remains unsafe. A [formal changes-requested review](https://github.com/R4vitejas/temporal-contract-floor3/pull/16#pullrequestreview-5952096055) is now submitted. Details and ownership: [INTERACTION_REVIEW_2026-11-18.md](INTERACTION_REVIEW_2026-11-18.md). This blocker belongs to Interactions; Sanjana's work is not a prerequisite for fixing or accepting it. No merge/issue closure was performed.
+
 ## Foundation and subsystem review
 
 - Bootstrap PR #2 is merged on main: Unity 6000.6.8f1, pinned runtime packages, contracts and router.
 - Network PR #1 at `57e1eff` fixes global startup interference and F1 handling. Both original review threads are resolved. Headless import/compilation passed; required interactive host/client/recovery checks remain pending, so #3 and PR #1 remain open.
 - Combat/round PR #17 at `30826aa` is stacked on PR #1. Headless import/compilation passed. Combat, round/rematch and real interaction integration acceptance remain pending (#4–#5).
-- Interaction PR #16 at `8af16b1` includes independent prefabs/test scene/lifecycle hooks. Its reported host/client tests are distinct from independently observed tests. Cover-release safety findings and explicit door/feedback/lifecycle evidence remain pending (#6–#7).
+- Interaction PR #16 is now at `22c8b32`; see the review update above. The missing door/feedback checks are recorded as author-observed. One independently reproduced exhausted-fallback safety finding remains (#6–#7).
 - No presentation PR is available on main yet. Sanjana can continue #8–#10 against mocks and the shared contracts without waiting for Main.
 
 ## Ravitejas's authorized work
