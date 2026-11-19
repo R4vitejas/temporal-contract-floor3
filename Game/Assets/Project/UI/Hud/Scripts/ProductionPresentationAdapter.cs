@@ -22,6 +22,7 @@ namespace TemporalContract.UI.Hud
         private PresentationState previous;
         private NetworkFpsPlayer capturedPlayer;
         private SessionPhase capturedPhase;
+        private bool capturedAlive;
         private float nextRefresh;
         private bool hasPrevious;
 
@@ -39,12 +40,12 @@ namespace TemporalContract.UI.Hud
             nextRefresh=Time.unscaledTime+.05f;
             TryGetState(out var state);
             var player=NetworkFpsPlayer.LocalOwner;
-            if(player!=capturedPlayer || !hasPrevious || state.phase!=capturedPhase)
+            if(player!=capturedPlayer || !hasPrevious || state.phase!=capturedPhase || state.alive!=capturedAlive)
             {
                 if(capturedPlayer && capturedPlayer!=player)capturedPlayer.SetGameplayInputCaptured(this,false);
-                capturedPlayer=player;capturedPhase=state.phase;
-                if(state.phase!=SessionPhase.ActiveRound && map)map.ForceClose();
-                if(player)player.SetGameplayInputCaptured(this,state.phase!=SessionPhase.ActiveRound);
+                capturedPlayer=player;capturedPhase=state.phase;capturedAlive=state.alive;
+                if((state.phase!=SessionPhase.ActiveRound||!state.alive) && map)map.ForceClose();
+                if(player)player.SetGameplayInputCaptured(this,state.phase!=SessionPhase.ActiveRound||!state.alive);
             }
             if(!hasPrevious || !state.Equals(previous)) {previous=state;hasPrevious=true;StateChanged?.Invoke();}
         }
@@ -88,6 +89,7 @@ namespace TemporalContract.UI.Hud
                 state.matchResult=round.MatchWinnerClientId==ulong.MaxValue?"MATCH DRAW":round.MatchWinnerClientId==local?"VICTORY":"DEFEAT";
             if(round&&round.Phase==MatchPhase.RoundResult&&!state.isPractice)
                 state.roundResult=((state.role==PlayerRole.Attacker)==(round.LastRoundOutcome==RoundOutcome.AttackersWon))?"ROUND WON":"ROUND LOST";
+            if(state.phase==SessionPhase.Lobby)state.statusMessage=(state.isHost?"HOST  ":"CONNECTED  ")+session.ConnectionLabel;
             return true;
         }
         public void Host(ushort port) {session.ConfigureEndpoint("127.0.0.1",port);session.StartHost();nextRefresh=0;}

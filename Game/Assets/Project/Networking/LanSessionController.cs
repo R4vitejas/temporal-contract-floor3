@@ -46,7 +46,8 @@ namespace TemporalContract.Networking
         public string ErrorMessage => errorMessage;
         public bool ExternalPresentation { get; set; }
         public bool IsMenuVisible => menuVisible;
-        public string ConnectionLabel => networkManager!=null&&networkManager.IsServer?(localAddress??(localAddress=GetLocalIpv4()))+":"+portText:joinAddress+":"+portText;
+        public string ConnectionAddress => networkManager!=null&&networkManager.IsServer?(localAddress??(localAddress=GetLocalIpv4())):joinAddress;
+        public string ConnectionLabel => ConnectionAddress+":"+portText;
         public void SetMenuVisible(bool visible){menuVisible=visible;SetLocalPlayerInputCaptured(visible);}
         public void ConfigureEndpoint(string address, ushort port)
         {
@@ -324,7 +325,10 @@ namespace TemporalContract.Networking
         {
             try
             {
-                foreach(var adapter in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().Where(n=>n.OperationalStatus==System.Net.NetworkInformation.OperationalStatus.Up&&n.NetworkInterfaceType!=System.Net.NetworkInformation.NetworkInterfaceType.Loopback))
+                foreach(var adapter in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(n=>n.OperationalStatus==System.Net.NetworkInformation.OperationalStatus.Up&&n.NetworkInterfaceType!=System.Net.NetworkInformation.NetworkInterfaceType.Loopback&&n.NetworkInterfaceType!=System.Net.NetworkInformation.NetworkInterfaceType.Tunnel)
+                    .Where(n=>!new[]{"docker","veth","virbr","br-","vEthernet"}.Any(prefix=>n.Name.StartsWith(prefix,System.StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(n=>n.NetworkInterfaceType==System.Net.NetworkInformation.NetworkInterfaceType.Wireless80211?0:n.NetworkInterfaceType==System.Net.NetworkInformation.NetworkInterfaceType.Ethernet?1:2))
                     foreach(var address in adapter.GetIPProperties().UnicastAddresses)
                         if(address.Address.AddressFamily==AddressFamily.InterNetwork&&!IPAddress.IsLoopback(address.Address))return address.Address.ToString();
                 foreach (IPAddress address in Dns.GetHostEntry(Dns.GetHostName()).AddressList)

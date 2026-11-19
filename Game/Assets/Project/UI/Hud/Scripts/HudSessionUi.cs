@@ -41,6 +41,7 @@ namespace TemporalContract.UI.Hud
         [Header("Lobby")]
         [SerializeField] private Text lobbyPlayersText;
         [SerializeField] private Text lobbyReadyText;
+        [SerializeField] private Text connectionText;
         [SerializeField] private Button readyButton;
         [SerializeField] private Text readyButtonText;
         [SerializeField] private Button startButton;
@@ -356,6 +357,7 @@ namespace TemporalContract.UI.Hud
         private void RenderLobby(PresentationState state)
         {
             ShowOnly(lobbyPanel);
+            if(connectionText)connectionText.text=state.statusMessage;
             SetText(lobbyPlayersText, $"Players: {state.connectedPlayers}/2");
             SetText(lobbyReadyText,
                 $"You: {(state.localReady ? "READY" : "not ready")}    Opponent: {(state.remoteReady ? "READY" : "not ready")}");

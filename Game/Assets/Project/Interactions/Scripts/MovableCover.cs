@@ -46,6 +46,9 @@ namespace TemporalContract.Interactions
         private Quaternion baselineRotation;
 
         public bool IsHeld => holderClientId.Value != NoHolder;
+        // A held object's candidate drop surface/path is checked by TryComputePlacement;
+        // the replicated display pose is not the placement target.
+        protected override bool RequiresVisibleApproach=>!IsHeld;
         public bool IsParked => parked.Value;
         public bool IsHeldBy(ulong clientId)=>holderClientId.Value==clientId;
         public static MovableCover FindHeldBy(ulong clientId)

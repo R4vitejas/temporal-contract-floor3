@@ -26,7 +26,7 @@ namespace TemporalContract.Feedback
             if(distance<.001f)return;
             if(!Physics.Raycast(position+Vector3.up*.15f,Vector3.down,.4f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)){travelled=0;return;}
             travelled+=distance;
-            if(travelled<.9f)return;travelled%=.9f;source.pitch=(foot++%2==0)?1.03f:.97f;source.PlayOneShot(GameplayAudioClips.Footstep);PlayedSteps++;
+            if(travelled<1.35f)return;travelled%=1.35f;source.pitch=(foot++%2==0)?1.03f:.97f;source.PlayOneShot(GameplayAudioClips.Footstep);PlayedSteps++;
         }
     }
 }

@@ -84,14 +84,23 @@ namespace TemporalContract.Environment.Testing
             var controls=FindFirstObjectByType<GameMenuController>();var uiSound=FindFirstObjectByType<InterfaceAudio>();
             int clicks=uiSound.ClicksPlayed;controls.settingsButtons[0].onClick.Invoke();yield return null;
             Check(controls.IsOpen&&uiSound.ClicksPlayed==clicks+1,"Settings button opens controls and plays one UI cue");
+            Capture("05-settings.png");yield return new WaitForSecondsRealtime(.15f);
             controls.volume.value=.35f;controls.sensitivity.value=.16f;controls.fov.value=78;
             Check(Mathf.Abs(AudioListener.volume-.35f)<.001f&&Mathf.Abs(GamePreferences.Sensitivity-.16f)<.001f,"Real audio and sensitivity controls apply");
             controls.volume.value=originalVolume;controls.sensitivity.value=originalSensitivity;controls.fov.value=originalFov;
             controls.resume.onClick.Invoke();yield return null;Check(!controls.IsOpen,"Settings returns to main menu");
             Capture("01-menu.png");yield return new WaitForSecondsRealtime(.15f);
-            var port=FindObjectsByType<InputField>(FindObjectsInactive.Include,FindObjectsSortMode.None).Single(f=>f.name=="PortInput");port.text="47979";
+            var port=FindObjectsByType<InputField>(FindObjectsInactive.Include,FindObjectsSortMode.None).Single(f=>f.name=="PortInput");port.text=System.Environment.GetEnvironmentVariable("MVP_TEST_PORT")??"47979";
             var practice=FindObjectsByType<Button>(FindObjectsInactive.Include,FindObjectsSortMode.None).Single(b=>b.name=="PracticeButton");
-            Check(practice.gameObject.activeInHierarchy&&practice.interactable,"Solo practice button available");practice.onClick.Invoke();
+            Check(practice.gameObject.activeInHierarchy&&practice.interactable,"Solo practice button available");
+            adapter.Host(ushort.Parse(port.text));yield return new WaitForSecondsRealtime(.35f);
+            Check(NetworkManager.Singleton.IsHost&&binding.hud.CurrentPhase==SessionPhase.Lobby,"Ordinary Host enters the real lobby");
+            LobbyNetworkState.Instance.SetLocalReady(true);
+            Check(!LobbyNetworkState.Instance.StartMatch()&&!LobbyNetworkState.Instance.MatchStarted,"Ordinary LAN start still rejects one ready player");
+            Capture("07-lobby.png");yield return new WaitForSecondsRealtime(.15f);
+            adapter.Disconnect();yield return new WaitForSecondsRealtime(.3f);
+            Check(binding.hud.CurrentPhase==SessionPhase.Disconnected&&guard.Check()==1,"Leaving the lobby restores menu ownership");
+            practice.onClick.Invoke();
             yield return new WaitForSecondsRealtime(.5f);
             player=NetworkFpsPlayer.LocalOwner;body=player?player.GetComponent<CharacterController>():null;
             var manager=NetworkManager.Singleton;var rounds=RoundCoordinator.Instance;
@@ -99,6 +108,8 @@ namespace TemporalContract.Environment.Testing
             Check(binding.hud.CurrentPhase==SessionPhase.ActiveRound,"HUD enters gameplay from the actual practice button");
             Check(Mathf.Abs(body.height-1.8f)<.001f&&Mathf.Abs(body.radius-.3f)<.001f&&Mathf.Abs(body.center.y-.9f)<.001f,"Production capsule uses floor dimensions");
             Check(Vector3.Distance(player.Position,binding.attackerSpawn.position)<.2f,"Initial player uses scene spawn");
+            player.PlaceAtSpawn(false);Check(Vector3.Distance(player.Position,binding.defenderSpawn.position)<.01f,"Server reset API uses the defender scene pose");
+            player.PlaceAtSpawn(true);Check(Vector3.Distance(player.Position,binding.attackerSpawn.position)<.01f,"Server reset API restores the attacker scene pose");
             Check(VipHealth.Instance&&Vector3.Distance(VipHealth.Instance.transform.position,binding.vipSpawn.position)<.01f,"Actual VIP uses staff-cabin pose");
             Check(binding.doors.All(d=>d.IsSpawned)&&binding.restrictedDoor.IsLocked,"All 24 source doors spawn with cabin locked");
             Check(FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Count(l=>l.enabled&&l.gameObject.activeInHierarchy)==1,"Exactly one owner listener");
@@ -106,6 +117,7 @@ namespace TemporalContract.Environment.Testing
             Check(audio.UsingPlayerView&&!audio.menuListener.enabled&&!audio.menuCamera.enabled&&guard.Check()==1,"Menu audio/view hands off to the actual owner without duplicates");
             controls.OpenSettings();yield return null;
             Check(controls.IsOpen&&player.IsGameplayInputCaptured,"Session controls capture movement and fire");
+            Capture("06-session.png");yield return new WaitForSecondsRealtime(.15f);
             controls.fov.value=80;Check(Mathf.Abs(player.GetComponentInChildren<Camera>().fieldOfView-80)<.01f,"Field-of-view control changes the actual owner camera");
             controls.fov.value=originalFov;controls.resume.onClick.Invoke();yield return null;
             Check(!controls.IsOpen&&!player.IsGameplayInputCaptured,"Continue releases the existing session capture owner");
@@ -136,6 +148,11 @@ namespace TemporalContract.Environment.Testing
             Place(binding.attackerSpawn.position);player.transform.rotation=binding.attackerSpawn.rotation;yield return null;yield return null;
             var router=player.GetComponent<InteractionRouter>();
             Check(ReferenceEquals(typeof(InteractionRouter).GetField("currentTarget",Private).GetValue(router),binding.movableCover),"Held cover remains the placement target above the camera ray");
+            Capture("04-cover-prompt.png");yield return new WaitForSecondsRealtime(.15f);
+            var carryBarrier=GameObject.CreatePrimitive(PrimitiveType.Cube);carryBarrier.name="Regression carry barrier";
+            carryBarrier.transform.SetPositionAndRotation(player.Position+player.transform.forward*.7f+Vector3.up,player.transform.rotation);carryBarrier.transform.localScale=new Vector3(1.5f,2,.12f);Physics.SyncTransforms();
+            Check(!Request(binding.movableCover)&&binding.movableCover.IsHeld,"Carried cover cannot be placed through an intervening wall");
+            Destroy(carryBarrier);yield return null;Physics.SyncTransforms();
             InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.E));yield return null;yield return null;
             Check(!binding.movableCover.IsHeld,"E places the held cover through the production router");
             InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
@@ -190,6 +207,13 @@ namespace TemporalContract.Environment.Testing
             Check(!Request(binding.lightSwitch)&&binding.lightSwitch.IsOn==wasOn,"Server rejects a real interaction through intervening geometry");
             Destroy(barrier);yield return null;Physics.SyncTransforms();
             var health=player.GetComponent<NetworkPlayerHealth>();
+            // Host-only role fixture: prove defender death closes local modals while the round continues.
+            var attacker=(NetworkVariable<ulong>)typeof(RoundCoordinator).GetField("attackerClientId",Private).GetValue(rounds);
+            ulong realAttacker=attacker.Value;attacker.Value=12345;binding.map.Open();
+            Check(health.ApplyDamage(100,12345),"Defender-death fixture uses the actual health path");yield return new WaitForSecondsRealtime(.15f);
+            Check(rounds.IsGameplayActive&&!binding.map.IsOpen&&player.IsGameplayInputCaptured,"Defender death closes the board without ending the round");
+            attacker.Value=realAttacker;health.ResetForRound(new RoundResetContext(0,rounds.MatchId));yield return new WaitForSecondsRealtime(.15f);
+            Check(health.IsAlive&&!player.IsGameplayInputCaptured,"Reviving the actor releases defeated-state input capture");
             binding.map.Open();
             Check(health.ApplyDamage(100,12345),"Actual health death path executes");
             Check(!Request(binding.lightSwitch),"Dead actor is denied on the server");
@@ -220,7 +244,19 @@ namespace TemporalContract.Environment.Testing
             practice.onClick.Invoke();yield return new WaitForSecondsRealtime(.4f);
             Check(manager.IsHost&&RoundCoordinator.Instance.IsGameplayActive&&NetworkFpsPlayer.LocalOwner,"A fresh practice session starts again without Editor restart");
             Check(guard.Check()==1&&audio.UsingPlayerView,"Re-host keeps exactly one owner listener");
+            var freshRound=RoundCoordinator.Instance;
+            var deadline=(NetworkVariable<double>)typeof(RoundCoordinator).GetField("roundEndsAt",Private).GetValue(freshRound);deadline.Value=manager.ServerTime.Time-.1;
+            yield return new WaitForSecondsRealtime(.2f);
+            Check(freshRound.LastRoundOutcome==RoundOutcome.DefendersWon&&freshRound.Phase==MatchPhase.RoundResult,"Expired authoritative deadline resolves defender victory");
+            freshRound.NotifyVipDied(manager.LocalClientId);freshRound.NotifyPlayerDied(manager.LocalClientId);yield return null;
+            Check(freshRound.LastRoundOutcome==RoundOutcome.DefendersWon,"A completed outcome cannot be overwritten by later terminal notifications");
             adapter.Disconnect();yield return new WaitForSecondsRealtime(.3f);Check(guard.Check()==1&&!audio.UsingPlayerView,"Second disconnect returns audio ownership to the menu");
+            practice.onClick.Invoke();yield return new WaitForSecondsRealtime(.35f);
+            freshRound=RoundCoordinator.Instance;var freshPlayer=NetworkFpsPlayer.LocalOwner;
+            Check(VipHealth.Instance.ApplyDamage(100,manager.LocalClientId)&&freshPlayer.GetComponent<NetworkPlayerHealth>().ApplyDamage(100,12345),"Simultaneous terminal fixture uses real VIP/player damage");
+            yield return new WaitForSecondsRealtime(.2f);
+            Check(freshRound.LastRoundOutcome==RoundOutcome.DefendersWon,"Attacker death takes precedence over a same-frame VIP death");
+            adapter.Disconnect();yield return new WaitForSecondsRealtime(.3f);Check(guard.Check()==1&&!audio.UsingPlayerView,"Repeated host/shutdown cycles leave one menu listener");
         }
         private bool Request(NetworkInteractable target) => target.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,target.NetworkObjectId));
         private void PlaceNear(NetworkInteractable target)

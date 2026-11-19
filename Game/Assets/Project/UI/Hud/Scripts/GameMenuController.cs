@@ -20,6 +20,8 @@ namespace TemporalContract.UI.Hud
         public Button resume,disconnect;
         public Slider volume,sensitivity,fov;
         public Button[] settingsButtons,quitButtons;
+        public Button copyAddressButton;
+        private float copiedUntil;
         private bool settingsOpen;
         public bool IsOpen=>panel&&panel.activeSelf;
         private void Awake()
@@ -30,6 +32,7 @@ namespace TemporalContract.UI.Hud
             resume.onClick.AddListener(()=>SetOpen(false));disconnect.onClick.AddListener(Disconnect);
             foreach(var button in settingsButtons)button.onClick.AddListener(OpenSettings);
             foreach(var button in quitButtons)button.onClick.AddListener(Quit);
+            if(copyAddressButton)copyAddressButton.onClick.AddListener(()=>{GUIUtility.systemCopyBuffer=session.ConnectionAddress;copiedUntil=Time.unscaledTime+1.5f;});
         }
         private void LateUpdate()
         {
@@ -46,6 +49,7 @@ namespace TemporalContract.UI.Hud
                 }
             }
             bool shown=settingsOpen || (active&&session.IsMenuVisible);
+            if(copyAddressButton)copyAddressButton.GetComponentInChildren<Text>().text=Time.unscaledTime<copiedUntil?"COPIED":"COPY ADDRESS";
             if(settingsOpen&&active&&!session.IsMenuVisible)session.SetMenuVisible(true);
             if(panel.activeSelf!=shown)panel.SetActive(shown);
             if(shown)
@@ -73,6 +77,7 @@ namespace TemporalContract.UI.Hud
         public void Quit()
         {
             GamePreferences.Save();
+            if(session&&NetworkManager.Singleton&&NetworkManager.Singleton.IsListening)session.Disconnect();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying=false;
 #else

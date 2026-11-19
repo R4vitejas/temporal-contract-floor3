@@ -115,10 +115,11 @@ namespace TemporalContract.Interactions
                 return Deny("out of range");
             }
 
-            if(!HasVisibleApproach(player))return Deny("interaction blocked by geometry");
+            if(RequiresVisibleApproach&&!HasVisibleApproach(player))return Deny("interaction blocked by geometry");
 
             return ExecuteOnServer(request, player);
         }
+        protected virtual bool RequiresVisibleApproach=>true;
         private bool HasVisibleApproach(NetworkObject player)
         {
             Vector3 target=InteractionOrigin;

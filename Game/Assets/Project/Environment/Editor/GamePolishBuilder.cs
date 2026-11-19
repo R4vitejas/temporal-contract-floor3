@@ -68,9 +68,26 @@ namespace TemporalContract.Environment.EditorTools
                 panel.GetComponent<Image>().color=new Color(.025f,.04f,.055f,.78f);
                 var option=Button("Polish - Settings",panel,"SETTINGS",new Vector2(-510,-300),new Vector2(180,38),new Color(.08f,.13f,.17f));settingsButtons.Add(option);
             }
+            var lobby=Get<GameObject>(hud,"lobbyPanel").transform;
+            var address=Label("Polish - Connection",lobby,"",new Vector2(0,160),new Vector2(800,28),15,Gold);Set(hud,"connectionText",address);
+            menu.copyAddressButton=Button("Polish - Copy address",lobby,"COPY ADDRESS",new Vector2(500,-300),new Vector2(200,38),new Color(.08f,.13f,.17f));
+            var lobbyTitle=lobby.GetComponentsInChildren<Text>(true).First(t=>t.name=="Title");lobbyTitle.fontSize=40;lobbyTitle.fontStyle=FontStyle.Bold;
+            StyleButton(Get<Button>(hud,"readyButton"),new Vector2(-125,-40),new Vector2(220,48),Blue,"READY");
+            StyleButton(Get<Button>(hud,"startButton"),new Vector2(125,-40),new Vector2(220,48),new Color(.18f,.42f,.3f),"START MATCH");
+            StyleButton(Get<Button>(hud,"lobbyDisconnectButton"),new Vector2(0,-120),new Vector2(220,40),new Color(.4f,.15f,.14f),"DISCONNECT");
+            Get<Text>(hud,"lobbyPlayersText").fontSize=28;Get<Text>(hud,"lobbyReadyText").fontSize=20;
+            StyleButton(Get<Button>(hud,"rematchButton"),new Vector2(-150,-70),new Vector2(280,46),Blue,"PLAY AGAIN");
+            StyleButton(Get<Button>(hud,"matchDisconnectButton"),new Vector2(150,-70),new Vector2(240,46),new Color(.4f,.15f,.14f),"DISCONNECT");
             menu.settingsButtons=settingsButtons.ToArray();menu.quitButtons=quitButtons.ToArray();scrim.gameObject.SetActive(false);
             StyleHud();
             generated.gameObject.AddComponent<InterfaceAudio>();
+            // These are nested prefab instances: recording component overrides is required in addition to saving the scene.
+            foreach(var transform in hud.GetComponentsInChildren<Transform>(true))
+            {
+                if(PrefabUtility.GetCorrespondingObjectFromSource(transform.gameObject)!=null)PrefabUtility.RecordPrefabInstancePropertyModifications(transform.gameObject);
+                foreach(var component in transform.GetComponents<Component>())
+                    if(component&&PrefabUtility.GetCorrespondingObjectFromSource(component)!=null){EditorUtility.SetDirty(component);PrefabUtility.RecordPrefabInstancePropertyModifications(component);}
+            }
             // Main deliberately keeps a single explicit listener before a player exists.
             Debug.Log("GAME_PRESENTATION_PREPARED: menu listener/camera handoff, production session menu, preferences, HUD cards and reload progress.");
         }
@@ -157,7 +174,9 @@ namespace TemporalContract.Environment.EditorTools
             var card=Panel("Polish - "+name,root,position,size,new Color(.025f,.04f,.055f,.9f));
             var group=card.gameObject.AddComponent<CanvasGroup>();group.blocksRaycasts=false;
             var driver=card.gameObject.AddComponent<HudNoticeBackdrop>();driver.target=text;driver.group=group;
-            text.transform.SetParent(card.transform,false);Place(text.rectTransform,Vector2.zero,size-new Vector2(20,4));text.fontSize=fontSize;text.color=color;
+            // Keep original prefab children under their original parent; only add a backdrop sibling.
+            text.transform.SetParent(root,false);Place(text.rectTransform,position,size-new Vector2(20,4));text.fontSize=fontSize;text.color=color;
+            card.transform.SetSiblingIndex(text.transform.GetSiblingIndex());
         }
         static void Background(Transform parent,string name,Vector2 position,Vector2 size){var image=Panel("Polish - "+name,parent,position,size,new Color(.025f,.04f,.055f,.82f));image.transform.SetAsFirstSibling();}
         static Slider Setting(Transform parent,string label,float y,float min,float max,out Text value)
@@ -174,17 +193,18 @@ namespace TemporalContract.Environment.EditorTools
         static Button Button(string name,Transform parent,string text,Vector2 position,Vector2 size,Color color)
         {
             var image=Panel(name,parent,position,size,color);image.raycastTarget=true;var button=image.gameObject.AddComponent<Button>();button.targetGraphic=image;
-            Label("Label",image.transform,text,Vector2.zero,size-new Vector2(10,4),14,Color.white,TextAnchor.MiddleCenter,true);return button;
+            Label("Label",image.transform,text,Vector2.zero,size-new Vector2(10,4),14,Color.white,TextAnchor.MiddleCenter,true);ButtonColors(button);return button;
         }
         static void StyleButton(Button button,Vector2 position,Vector2 size,Color color,string label)
-        {Place((RectTransform)button.transform,position,size);button.GetComponent<Image>().color=color;var text=button.GetComponentInChildren<Text>(true);text.text=label;text.fontSize=16;text.fontStyle=FontStyle.Bold;}
+        {Place((RectTransform)button.transform,position,size);button.GetComponent<Image>().color=color;var text=button.GetComponentInChildren<Text>(true);text.text=label;text.fontSize=16;text.fontStyle=FontStyle.Bold;ButtonColors(button);}
+        static void ButtonColors(Button button){var colors=button.colors;colors.highlightedColor=new Color(1.2f,1.2f,1.2f);colors.selectedColor=new Color(1.1f,1.1f,1.1f);colors.pressedColor=new Color(.7f,.7f,.7f);colors.disabledColor=new Color(.45f,.45f,.45f,.6f);colors.fadeDuration=.08f;button.colors=colors;}
         static Text Label(string name,Transform parent,string value,Vector2 position,Vector2 size,int fontSize,Color color,TextAnchor alignment=TextAnchor.MiddleCenter,bool bold=false)
         {
             var go=new GameObject(name,typeof(RectTransform),typeof(Text));go.transform.SetParent(parent,false);Place((RectTransform)go.transform,position,size);
             var text=go.GetComponent<Text>();text.font=font;text.text=value;text.fontSize=fontSize;text.color=color;text.alignment=alignment;text.raycastTarget=false;text.supportRichText=false;text.fontStyle=bold?FontStyle.Bold:FontStyle.Normal;return text;
         }
         static Image Panel(string name,Transform parent,Vector2 position,Vector2 size,Color color)
-        {var go=new GameObject(name,typeof(RectTransform),typeof(Image));go.transform.SetParent(parent,false);Place((RectTransform)go.transform,position,size);var image=go.GetComponent<Image>();image.color=color;image.raycastTarget=false;return image;}
+        {var go=new GameObject(name,typeof(RectTransform),typeof(RoundedPanelImage));go.transform.SetParent(parent,false);Place((RectTransform)go.transform,position,size);var image=go.GetComponent<RoundedPanelImage>();image.color=color;image.raycastTarget=false;return image;}
         static void Place(RectTransform rect,Vector2 position,Vector2 size){rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(.5f,.5f);rect.anchoredPosition=position;rect.sizeDelta=size;}
         static void Stretch(RectTransform rect){rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;rect.offsetMin=rect.offsetMax=Vector2.zero;}
         static void Clean(Transform parent)
