@@ -131,7 +131,7 @@ namespace TemporalContract.Environment.Testing
             var playerMove=typeof(NetworkFpsPlayer).GetMethod("MoveHorizontal",Private);int beforeSteps=player.GetComponent<PlayerFootsteps>().PlayedSteps;
             for(int i=0;i<25;i++){playerMove.Invoke(player,new object[]{Vector2.up,.016f});yield return null;}
             Check(player.GetComponent<PlayerFootsteps>().PlayedSteps>beforeSteps,"Actual grounded travel produces spatial foot-contact audio");
-            Place(binding.movableCover.transform.position+Vector3.right*.8f);
+            PlaceNear(binding.movableCover);
             Check(Request(binding.movableCover)&&binding.movableCover.IsHeldBy(player.OwnerClientId),"Actual cover pickup records the host-owned holder");
             Place(binding.attackerSpawn.position);player.transform.rotation=binding.attackerSpawn.rotation;yield return null;yield return null;
             var router=player.GetComponent<InteractionRouter>();
@@ -146,14 +146,13 @@ namespace TemporalContract.Environment.Testing
             weapon.RequestReload();yield return new WaitForSecondsRealtime(.1f);
             adapter.TryGetState(out state);Check(weapon.IsReloading&&state.reloading,"Reload state reaches HUD");
             yield return new WaitForSecondsRealtime(1.6f);Check(weapon.Ammunition==12&&!weapon.IsReloading,"Real reload completes");
-            Place(binding.keycard.transform.position+Vector3.right*.7f);
+            PlaceNear(binding.keycard);
             Check(Request(binding.keycard)&&binding.keycard.IsHeldBy(player.OwnerClientId),"Actual attacker collects the scene keycard");
-            Place(binding.accessPanel.transform.position+Vector3.forward*.7f);
+            PlaceNear(binding.accessPanel);
             Check(Request(binding.accessPanel)&&binding.accessPanel.IsGranted&&!binding.restrictedDoor.IsLocked,"Card grants the scene access panel and unlocks cabin");
             foreach(var door in binding.doors)
             {
-                var origin=(Transform)new FieldReference(door).Reference("interactionPoint");
-                Place(origin.position+Vector3.forward*.7f);
+                PlaceNear(door);
                 Check(Request(door)&&door.IsOpen,"Server opens source door "+door.name);
             }
             yield return new WaitForSecondsRealtime(.7f);
@@ -182,8 +181,14 @@ namespace TemporalContract.Environment.Testing
                 }
             }
             finally {player.gameObject.layer=oldLayer;}
-            Place(binding.lightSwitch.transform.position+Vector3.right);
+            PlaceNear(binding.lightSwitch);
             Check(Request(binding.lightSwitch),"Healthy active actor interaction allowed");
+            var point=binding.lightSwitch.GetComponentsInChildren<Collider>().First(c=>!c.isTrigger).bounds.center;
+            var eye=player.GetComponentInChildren<Camera>().transform.position;
+            var barrier=GameObject.CreatePrimitive(PrimitiveType.Cube);barrier.name="Regression sight barrier";barrier.transform.position=(eye+point)*.5f;barrier.transform.localScale=new Vector3(.16f,.8f,.16f);Physics.SyncTransforms();
+            bool wasOn=binding.lightSwitch.IsOn;
+            Check(!Request(binding.lightSwitch)&&binding.lightSwitch.IsOn==wasOn,"Server rejects a real interaction through intervening geometry");
+            Destroy(barrier);yield return null;Physics.SyncTransforms();
             var health=player.GetComponent<NetworkPlayerHealth>();
             binding.map.Open();
             Check(health.ApplyDamage(100,12345),"Actual health death path executes");
@@ -218,6 +223,23 @@ namespace TemporalContract.Environment.Testing
             adapter.Disconnect();yield return new WaitForSecondsRealtime(.3f);Check(guard.Check()==1&&!audio.UsingPlayerView,"Second disconnect returns audio ownership to the menu");
         }
         private bool Request(NetworkInteractable target) => target.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,target.NetworkObjectId));
+        private void PlaceNear(NetworkInteractable target)
+        {
+            var origin=(Transform)new FieldReference(target).Reference("interactionPoint");
+            var collider=target.GetComponentsInChildren<Collider>().FirstOrDefault(c=>c.enabled&&!c.isTrigger);
+            Vector3 point=origin?origin.position:collider?collider.bounds.center:target.transform.position;
+            body.enabled=false;
+            foreach(float distance in new[]{.8f,1.1f,.5f,.4f})
+                foreach(var direction in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left,new Vector3(1,0,1).normalized,new Vector3(-1,0,-1).normalized})
+                {
+                    Vector3 candidate=point+direction*distance;candidate.y=.065f;candidate=Ground(candidate);
+                    if(Physics.OverlapCapsule(candidate+Vector3.up*.31f,candidate+Vector3.up*1.49f,.3f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore).Length!=0)continue;
+                    Vector3 eye=candidate+Vector3.up*1.62f,delta=point-eye;
+                    if(Physics.Raycast(eye,delta.normalized,out var hit,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)&&!hit.collider.transform.IsChildOf(target.transform))continue;
+                    Place(candidate);return;
+                }
+            throw new InvalidOperationException("No clear interaction approach for "+target.name);
+        }
         private void Place(Vector3 value)
         {
             value.y=Mathf.Max(.065f,value.y>1?.065f:value.y);

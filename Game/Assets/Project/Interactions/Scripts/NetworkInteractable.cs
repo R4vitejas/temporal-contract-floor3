@@ -88,7 +88,7 @@ namespace TemporalContract.Interactions
         public bool TryHandleInteraction(in InteractionRequest request)
         {
             pendingDenyReason = "rejected";
-            if (!IsServer || !IsSpawned)
+            if (!IsServer || !IsSpawned || !isActiveAndEnabled)
             {
                 return Deny("not host or not spawned");
             }
@@ -115,7 +115,27 @@ namespace TemporalContract.Interactions
                 return Deny("out of range");
             }
 
+            if(!HasVisibleApproach(player))return Deny("interaction blocked by geometry");
+
             return ExecuteOnServer(request, player);
+        }
+        private bool HasVisibleApproach(NetworkObject player)
+        {
+            Vector3 target=InteractionOrigin;
+            if(interactionPoint==null)
+                foreach(var collider in GetComponentsInChildren<Collider>())
+                    if(collider.enabled&&!collider.isTrigger){target=collider.bounds.center;break;}
+            var camera=player.GetComponentInChildren<Camera>(true);
+            Vector3 eye=camera?camera.transform.position:player.transform.position+Vector3.up*1.62f;
+            Vector3 delta=target-eye;if(delta.sqrMagnitude<.0001f)return true;
+            var hits=Physics.RaycastAll(eye,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+            System.Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));
+            foreach(var hit in hits)
+            {
+                if(hit.collider.GetComponentInParent<NetworkObject>()==player)continue;
+                return hit.collider.transform.IsChildOf(transform);
+            }
+            return true;
         }
 
         /// <summary>Validate role/state and mutate replicated state. Called on the host after range checks pass.</summary>
