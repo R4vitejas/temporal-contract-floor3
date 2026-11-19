@@ -34,15 +34,24 @@ namespace TemporalContract.Interactions
 
         private readonly NetworkVariable<ulong> holderClientId = new NetworkVariable<ulong>(NoHolder);
 
+        // True while a forced release found no valid spot: the cover is hidden and non-solid until
+        // a free spot appears or the round resets. It is never placed into an invalid pose.
+        private readonly NetworkVariable<bool> parked = new NetworkVariable<bool>(false);
+
+        private const float ParkRetrySeconds = 1f;
+        private float nextParkRetry;
+        private Renderer[] ownRenderers;
         private Collider[] ownColliders;
         private Vector3 baselinePosition;
         private Quaternion baselineRotation;
 
         public bool IsHeld => holderClientId.Value != NoHolder;
+        public bool IsParked => parked.Value;
 
         private void Awake()
         {
             ownColliders = GetComponentsInChildren<Collider>();
+            ownRenderers = GetComponentsInChildren<Renderer>(true);
             if (GetComponent<Rigidbody>() == null)
             {
                 gameObject.AddComponent<Rigidbody>().isKinematic = true;
@@ -57,10 +66,13 @@ namespace TemporalContract.Interactions
             if (IsServer)
             {
                 holderClientId.Value = NoHolder;
+                parked.Value = false;
                 NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
             }
 
             holderClientId.OnValueChanged += OnHolderChanged;
+            parked.OnValueChanged += OnParkedChanged;
+            ApplyParked();
             if (IsHeld)
             {
                 SetHolderCollisionIgnored(holderClientId.Value, true);
@@ -70,6 +82,7 @@ namespace TemporalContract.Interactions
         public override void OnNetworkDespawn()
         {
             holderClientId.OnValueChanged -= OnHolderChanged;
+            parked.OnValueChanged -= OnParkedChanged;
             if (IsServer && NetworkManager != null)
             {
                 NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
@@ -79,7 +92,18 @@ namespace TemporalContract.Interactions
         // Host moves the object; NetworkTransform replicates it to clients.
         private void Update()
         {
-            if (!IsServer || !IsSpawned || !IsHeld)
+            if (!IsServer || !IsSpawned)
+            {
+                return;
+            }
+
+            if (parked.Value)
+            {
+                RetryUnpark();
+                return;
+            }
+
+            if (!IsHeld)
             {
                 return;
             }
@@ -103,6 +127,12 @@ namespace TemporalContract.Interactions
 
         protected override bool TryBuildPrompt(IInteractionActor actor, out InteractionPrompt prompt)
         {
+            if (parked.Value)
+            {
+                prompt = default;
+                return false;
+            }
+
             if (!IsHeld)
             {
                 prompt = new InteractionPrompt("Pick up", "E", true);
@@ -121,6 +151,11 @@ namespace TemporalContract.Interactions
 
         protected override bool ExecuteOnServer(in InteractionRequest request, NetworkObject player)
         {
+            if (parked.Value)
+            {
+                return Deny("cover unavailable: no free spot to place it");
+            }
+
             if (!IsHeld)
             {
                 // One cover per player, and one holder per cover (host handles requests serially).
@@ -301,15 +336,105 @@ namespace TemporalContract.Interactions
                 // Fall back to the baseline, but never onto an occupied spot: search a ring around it.
                 placed = TryFindFreeSpotNear(baselinePosition, baselineRotation, out target);
                 rotation = baselineRotation;
-                if (!placed)
+            }
+
+            if (placed)
+            {
+                transform.SetPositionAndRotation(target, rotation);
+            }
+            else
+            {
+                Park();
+            }
+
+            holderClientId.Value = NoHolder;
+        }
+
+        /// <summary>
+        /// No safe spot exists: clear ownership, then hide the cover and make it non-solid so nothing
+        /// is ever placed into a player or geometry. It reappears at a free spot near its baseline as
+        /// soon as one exists (checked every second), or at the exact baseline on round reset.
+        /// </summary>
+        private void Park()
+        {
+            Debug.LogWarning($"[{name}] no valid drop spot; cover parked until a free spot appears or the round resets.", this);
+            transform.SetPositionAndRotation(baselinePosition, baselineRotation);
+            nextParkRetry = Time.time + ParkRetrySeconds;
+            parked.Value = true;
+        }
+
+        private void RetryUnpark()
+        {
+            if (Time.time < nextParkRetry)
+            {
+                return;
+            }
+
+            nextParkRetry = Time.time + ParkRetrySeconds;
+            if (TryFindFreeSpotNear(baselinePosition, baselineRotation, out Vector3 point))
+            {
+                transform.SetPositionAndRotation(point, baselineRotation);
+                parked.Value = false;
+            }
+        }
+
+        private void OnParkedChanged(bool previous, bool current) => ApplyParked();
+
+        private bool[] rendererStates;
+        private bool[] colliderStates;
+        private bool appliedParked;
+
+        // Hides and disables the cover while parked, and on unpark restores each component to whatever it
+        // was before (the floor assembly intentionally disables the placeholder renderer).
+        private void ApplyParked()
+        {
+            bool shouldPark = parked.Value;
+            if (shouldPark == appliedParked)
+            {
+                return;
+            }
+
+            appliedParked = shouldPark;
+            if (shouldPark)
+            {
+                rendererStates = new bool[ownRenderers.Length];
+                colliderStates = new bool[ownColliders.Length];
+                for (int i = 0; i < ownRenderers.Length; i++)
                 {
-                    target = baselinePosition;
-                    Debug.LogWarning($"[{name}] no free drop spot found; restoring exact baseline.", this);
+                    rendererStates[i] = ownRenderers[i] != null && ownRenderers[i].enabled;
+                    if (ownRenderers[i] != null)
+                    {
+                        ownRenderers[i].enabled = false;
+                    }
+                }
+
+                for (int i = 0; i < ownColliders.Length; i++)
+                {
+                    colliderStates[i] = ownColliders[i] != null && ownColliders[i].enabled;
+                    if (ownColliders[i] != null)
+                    {
+                        ownColliders[i].enabled = false;
+                    }
+                }
+
+                return;
+            }
+
+            for (int i = 0; i < ownRenderers.Length && rendererStates != null; i++)
+            {
+                if (ownRenderers[i] != null)
+                {
+                    ownRenderers[i].enabled = rendererStates[i];
                 }
             }
 
-            transform.SetPositionAndRotation(target, rotation);
-            holderClientId.Value = NoHolder;
+            for (int i = 0; i < ownColliders.Length && colliderStates != null; i++)
+            {
+                if (ownColliders[i] != null)
+                {
+                    ownColliders[i].enabled = colliderStates[i];
+                }
+            }
         }
 
         private bool TryValidDropPoint(Vector3 around, Quaternion rotation, bool checkReach, Vector3 eye,
@@ -360,6 +485,7 @@ namespace TemporalContract.Interactions
 
         protected override void ResetState()
         {
+            parked.Value = false;
             holderClientId.Value = NoHolder;
             transform.SetPositionAndRotation(baselinePosition, baselineRotation);
         }

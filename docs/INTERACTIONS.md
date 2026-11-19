@@ -96,11 +96,12 @@ InteractionLifecycle.OnPlayerDied(clientId);
 - Death or disconnect drops held cover under the same rules as a manual placement: a valid
   surface, no overlap with walls/furniture/players, and (when the holder still exists) no wall
   between the holder's eyes and the spot. Candidates are the carry point, then a ring around the
-  holder's feet. If none qualifies it falls back to the baseline pose, but searches a ring around the
-  baseline for a free spot first so it is never dropped onto an occupied one (only if no free spot
-  exists at all does it use the exact baseline and log a warning). The holder lock is always cleared,
-  so the object can be picked up again. A round reset, by contrast, restores the exact baseline
-  because players are respawned at the same boundary.
+  holder's feet, then a free spot near the cover's baseline (center plus rings at 0.6/1.2/1.8 m).
+  **If no valid spot exists the cover is parked, never placed:** the holder lock is cleared, the cover
+  is hidden and its colliders are disabled on every peer (so nothing solid is ever placed into a player
+  or geometry), and the host retries every second, bringing it back at a free spot near its baseline as
+  soon as one exists. A round reset unparks it and restores the exact baseline (players are respawned at
+  the same boundary). While parked it shows no prompt and denies requests.
 
 ### Ravitejas (floor, main scene, integration)
 - Place the prefabs in `Main.unity`; swap the placeholder meshes for the real door/furniture meshes.
@@ -155,6 +156,7 @@ Host + client was run by Adhithya with two instances of `InteractionsTest.unity`
 | Requester-only denial feedback: only the denied player's log shows it | n/a | observed |
 | Feedback event `obj` id equals the interaction's NetworkObjectId on both screens | n/a | observed |
 | `K` while the carry point is inside a wall: cover lands on a reachable spot | n/a | observed |
+| Cover release when every drop spot is invalid (parked, no solid placement), reappears when space returns, reset unparks | PASS (host Play Mode regression, see below) | n/a |
 | Client disconnects while holding cover: host can pick it up afterwards | n/a | observed |
 
 Findings from the host + client run:
@@ -179,6 +181,22 @@ me the attacker, `Y` make me the defender (the other client becomes attacker), `
 provider (nobody is attacker). The scene starts with the host bound as attacker, so the client is the
 defender and cannot take the card until `T`. The test role provider lives in `Interactions/Test`.
 
+
+### Cover release regression (host Play Mode, headless)
+
+`Interactions/Test/CoverReleaseRegression.cs` with the scene built by
+`Interactions/Editor/CoverRegressionRunner.cs` covers: baseline and carry point blocked but free space
+nearby (lands on a free spot, not inside the obstruction); no valid spot at all (holder cleared,
+parked, colliders off, renderers hidden, no prompt); free space returns (cover reappears, colliders
+and prompt restored); reset while parked (unparked at the exact baseline). Run it from the menu
+**Temporal Contract > Interactions > Run Cover Release Regression**, or headless:
+
+```
+Unity -batchmode -nographics -projectPath Game -executeMethod TemporalContract.Interactions.EditorTools.CoverRegressionRunner.RunBatch -logFile regression.log
+```
+
+It prints `COVER_REGRESSION PASS/FAIL` lines and exits 0 on pass, 2 on failure. Last run on this
+branch: 19 checks, all PASS, exit code 0 (Unity 6000.6.8f1).
 
 ## Known limitations
 
