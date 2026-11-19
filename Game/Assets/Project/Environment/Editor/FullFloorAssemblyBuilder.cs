@@ -115,8 +115,11 @@ namespace TemporalContract.Environment.EditorTools
                 bindings.restrictedDoor = bindings.doors.Single(d => d.name.EndsWith("Source_Door.004",StringComparison.Ordinal));
                 bindings.keycard = Interaction<KeycardPickup>("Keycard", root.transform, new Vector3(-18.98f,.12f,-9));
                 var restrictedBounds = doors.Single(d => d.name == "Source_Door.004").bounds;
+                bool restrictedAcrossX=restrictedBounds.size.x>restrictedBounds.size.z;
                 bindings.accessPanel = Interaction<AccessPanel>("AccessPanel", root.transform,
-                    new Vector3(restrictedBounds.max.x + .25f, .05f, restrictedBounds.center.z + .12f));
+                    restrictedAcrossX?new Vector3(restrictedBounds.max.x+.25f,.05f,restrictedBounds.center.z+.12f)
+                        :new Vector3(restrictedBounds.center.x+.12f,.05f,restrictedBounds.max.z+.25f));
+                bindings.accessPanel.transform.rotation=Quaternion.Euler(0,restrictedAcrossX?0:90,0);
                 Set(bindings.accessPanel,"keycard",bindings.keycard); Set(bindings.accessPanel,"restrictedDoor",bindings.restrictedDoor);
                 bindings.lightSwitch = Interaction<WallSwitch>("WallSwitch",root.transform,new Vector3(-3.99f,0,-14.9f));
                 bindings.lightSwitch.transform.rotation=Quaternion.Euler(0,90,0);
