@@ -193,6 +193,8 @@ namespace TemporalContract.Environment.EditorTools
             door.name += " - " + mesh.name;
             door.transform.rotation=Quaternion.Euler(0,acrossX?0:-90,0);
             var settings=new SerializedObject(door);
+            // The adjacent cubicle leaf must swing away from Door.012's clear approach space.
+            settings.FindProperty("openAngle").floatValue=mesh.name=="Source_Door.014"?-90f:90f;
             var hinge=(Transform)settings.FindProperty("hinge").objectReferenceValue;
             foreach(Transform child in hinge.Cast<Transform>().ToArray()) UnityEngine.Object.DestroyImmediate(child.gameObject);
             var pivot=new Vector3(acrossX?bounds.min.x:bounds.center.x,bounds.min.y,acrossX?bounds.center.z:bounds.min.z);
