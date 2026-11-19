@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9984bddb9f5218d45a53fec74f6526c6, type: 3}
+  m_Name: FeedbackCueLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Feedback.FeedbackCueLibrary
+  cues:
+  - kind: 2
+    clip: {fileID: 8300000, guid: 82e5788f0a63533429261d4329a6d604, type: 3}
+    volume: 0.9
+    positional: 1
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  - kind: 4
+    clip: {fileID: 8300000, guid: 454d3c730c13ac3449d1d71467b64c90, type: 3}
+    volume: 0.8
+    positional: 1
+    minDistance: 1.5
+    maxDistance: 20
+    pitchVariance: 0.05
+  - kind: 3
+    clip: {fileID: 8300000, guid: dbbe75bce300fd140bbba9406a321e09, type: 3}
+    volume: 0.8
+    positional: 1
+    minDistance: 1.5
+    maxDistance: 20
+    pitchVariance: 0.05
+  - kind: 5
+    clip: {fileID: 8300000, guid: fc41635727223b048ac0d590de295ea8, type: 3}
+    volume: 0.7
+    positional: 1
+    minDistance: 1.5
+    maxDistance: 20
+    pitchVariance: 0.05
+  - kind: 6
+    clip: {fileID: 8300000, guid: fc41635727223b048ac0d590de295ea8, type: 3}
+    volume: 0.8
+    positional: 1
+    minDistance: 1.5
+    maxDistance: 20
+    pitchVariance: 0.05
+  - kind: 1
+    clip: {fileID: 8300000, guid: 89f21b55bbaebfe4daebaeef1c4f48af, type: 3}
+    volume: 0.7
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  - kind: 0
+    clip: {fileID: 8300000, guid: 2938d04f161cad344bf62d6f388d920a, type: 3}
+    volume: 0.7
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  - kind: 7
+    clip: {fileID: 8300000, guid: 9f4ac52ab88eae947a01bb8c1799e420, type: 3}
+    volume: 0.8
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  - kind: 8
+    clip: {fileID: 8300000, guid: bb06036761847fd458cf06a3205dd649, type: 3}
+    volume: 0.6
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  - kind: 9
+    clip: {fileID: 8300000, guid: bb06036761847fd458cf06a3205dd649, type: 3}
+    volume: 0.6
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  - kind: 10
+    clip: {fileID: 8300000, guid: bb06036761847fd458cf06a3205dd649, type: 3}
+    volume: 0.7
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  weaponFire:
+    kind: 7
+    clip: {fileID: 8300000, guid: b30f28ecf3d18804eab0fd45c0d3e427, type: 3}
+    volume: 1
+    positional: 1
+    minDistance: 3
+    maxDistance: 60
+    pitchVariance: 0.05
+  hitConfirm:
+    kind: 7
+    clip: {fileID: 8300000, guid: 14b66f1d52d860d4d9534a194d0e209b, type: 3}
+    volume: 0.6
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
+  damageTaken:
+    kind: 7
+    clip: {fileID: 8300000, guid: 9f4ac52ab88eae947a01bb8c1799e420, type: 3}
+    volume: 0.8
+    positional: 0
+    minDistance: 2
+    maxDistance: 25
+    pitchVariance: 0.05
