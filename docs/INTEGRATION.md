@@ -80,7 +80,7 @@ public interface IGameplayInputCapture
 }
 ```
 
-Feedback event payloads are presentation-only and cannot mutate authoritative state. UI components implement `IGameplayInputCapture` and report true while a modal board/menu owns keyboard or mouse input. UI subscribes to round/player state for displayed scores and timers; it does not own those values or resolve round outcomes.
+Feedback event payloads are presentation-only and cannot mutate authoritative state. `NetworkFpsPlayer` implements `IGameplayInputCapture` and reports captured input while one or more local modal owners hold a lock. A board/menu component calls `SetGameplayInputCaptured(this, true)` when it opens and `SetGameplayInputCaptured(this, false)` when it closes or is destroyed. Each owner releases only its own lock, so closing a board cannot unlock input while the session menu remains open. Round, health, and ammo presentation APIs are documented in [NETWORK_CORE.md](NETWORK_CORE.md) as their stacked network/combat work lands; UI must not own authoritative state.
 
 ## Package and project settings
 
