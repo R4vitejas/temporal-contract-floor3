@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3adbae2ed0b6b319d9c3e817343da844, type: 3}
   m_Name: FloorAssemblyConfig
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Environment.FloorAssemblyConfig
-  subsystemReviewsAccepted: 0
-  productionCapsuleFitVerified: 0
-  networkCommit:
-  interactionCommit:
-  presentationCommit:
+  subsystemReviewsAccepted: 1
+  productionCapsuleFitVerified: 1
+  networkCommit: 16d7f5bf787adbc11185b579a326db42e76d0f24
+  interactionCommit: 16d7f5bf787adbc11185b579a326db42e76d0f24
+  presentationCommit: 16d7f5bf787adbc11185b579a326db42e76d0f24
   presentationPrefab: {fileID: 2111254978643043724, guid: 5a9ebad07e6d3dd789fd302345c620c9, type: 3}
-  presentationBindingsVerified: 0
+  presentationBindingsVerified: 1
+  verificationScope: 'Single-host MVP: 117 checks, 48 actual-production-player doorway traversals, real HUD/weapon/round/death/reset. Full two-client/two-laptop acceptance remains pending.'

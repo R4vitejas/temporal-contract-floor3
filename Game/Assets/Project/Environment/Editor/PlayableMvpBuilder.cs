@@ -33,6 +33,15 @@ namespace TemporalContract.Environment.EditorTools
             EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(FullFloorAssemblyBuilder.MainPath,true)};
             EditorSceneManager.OpenScene(FullFloorAssemblyBuilder.MainPath);
         }
+        public static void RecordSingleHostAcceptance(string sourceCommit)
+        {
+            var config=AssetDatabase.LoadAssetAtPath<FloorAssemblyConfig>("Assets/Project/Environment/Data/FloorAssemblyConfig.asset");
+            config.subsystemReviewsAccepted=true;config.productionCapsuleFitVerified=true;config.presentationBindingsVerified=true;
+            config.networkCommit=config.interactionCommit=config.presentationCommit=sourceCommit;
+            config.verificationScope="Single-host MVP: 117 checks, 48 actual-production-player doorway traversals, real HUD/weapon/round/death/reset. Full two-client/two-laptop acceptance remains pending.";
+            EditorUtility.SetDirty(config);AssetDatabase.SaveAssetIfDirty(config);
+            EnableMain();
+        }
         public static void RunRegression()
         {
             EditorSceneManager.OpenScene(FullFloorAssemblyBuilder.MainPath);

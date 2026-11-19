@@ -12,5 +12,6 @@ namespace TemporalContract.Environment
         public GameObject presentationPrefab;
         [Tooltip("Set after the owner's documented board, modal input, state and feedback bindings have been verified.")]
         public bool presentationBindingsVerified;
+        [TextArea] public string verificationScope;
     }
 }
