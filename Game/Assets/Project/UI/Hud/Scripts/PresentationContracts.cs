@@ -44,6 +44,7 @@ namespace TemporalContract.UI.Hud
         public int ammo;
         public int magazineSize;
         public bool reloading;
+        public float reloadProgress;
         /// <summary>Seconds left in the round as reported by the authority; negative = unknown.</summary>
         public float timeRemainingSeconds;
         public int roundNumber;

@@ -13,6 +13,9 @@ using TemporalContract.UI.Hud;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+using TemporalContract.Feedback;
 
 namespace TemporalContract.Environment.Testing
 {
@@ -25,6 +28,8 @@ namespace TemporalContract.Environment.Testing
         private ProductionPresentationAdapter adapter;
         private NetworkFpsPlayer player;
         private CharacterController body;
+        private Keyboard keyboard;
+        private float originalVolume,originalSensitivity,originalFov;
         private static readonly BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
@@ -39,6 +44,12 @@ namespace TemporalContract.Environment.Testing
         private IEnumerator Start()
         {
             Application.runInBackground=true;
+            originalVolume=GamePreferences.Volume;originalSensitivity=GamePreferences.Sensitivity;originalFov=GamePreferences.FieldOfView;
+            InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+#if UNITY_EDITOR
+            InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+#endif
+            keyboard=InputSystem.AddDevice<Keyboard>("ProductionAcceptanceKeyboard");
             var routine=Run();
             while(true)
             {
@@ -49,6 +60,8 @@ namespace TemporalContract.Environment.Testing
                 yield return current;
             }
             string output=System.Environment.GetEnvironmentVariable("MVP_ACCEPTANCE_OUTPUT");
+            if(keyboard!=null)InputSystem.RemoveDevice(keyboard);
+            GamePreferences.Volume=originalVolume;GamePreferences.Sensitivity=originalSensitivity;GamePreferences.FieldOfView=originalFov;GamePreferences.Save();
             if(!string.IsNullOrEmpty(output))System.IO.File.WriteAllText(output,JsonUtility.ToJson(report,true));
             Debug.Log("PLAYABLE_MVP_ACCEPTANCE "+JsonUtility.ToJson(report));
             if(NetworkManager.Singleton)NetworkManager.Singleton.Shutdown();
@@ -66,6 +79,15 @@ namespace TemporalContract.Environment.Testing
             Check(binding&&adapter,"Production binding/provider present");
             Check(binding.hud.CurrentPhase==SessionPhase.Disconnected,"Real main menu appears before opt-in startup");
             Check(!NetworkManager.Singleton.IsListening,"No automatic network startup");
+            var audio=FindFirstObjectByType<LocalAudioDirector>();var guard=FindFirstObjectByType<SingleAudioListenerGuard>();
+            Check(audio&&audio.menuListener.enabled&&audio.menuCamera.enabled&&guard.Check()==1,"Menu has exactly one explicit listener and view");
+            var controls=FindFirstObjectByType<GameMenuController>();var uiSound=FindFirstObjectByType<InterfaceAudio>();
+            int clicks=uiSound.ClicksPlayed;controls.settingsButtons[0].onClick.Invoke();yield return null;
+            Check(controls.IsOpen&&uiSound.ClicksPlayed==clicks+1,"Settings button opens controls and plays one UI cue");
+            controls.volume.value=.35f;controls.sensitivity.value=.16f;controls.fov.value=78;
+            Check(Mathf.Abs(AudioListener.volume-.35f)<.001f&&Mathf.Abs(GamePreferences.Sensitivity-.16f)<.001f,"Real audio and sensitivity controls apply");
+            controls.volume.value=originalVolume;controls.sensitivity.value=originalSensitivity;controls.fov.value=originalFov;
+            controls.resume.onClick.Invoke();yield return null;Check(!controls.IsOpen,"Settings returns to main menu");
             Capture("01-menu.png");yield return new WaitForSecondsRealtime(.15f);
             var port=FindObjectsByType<InputField>(FindObjectsInactive.Include,FindObjectsSortMode.None).Single(f=>f.name=="PortInput");port.text="47979";
             var practice=FindObjectsByType<Button>(FindObjectsInactive.Include,FindObjectsSortMode.None).Single(b=>b.name=="PracticeButton");
@@ -81,6 +103,12 @@ namespace TemporalContract.Environment.Testing
             Check(binding.doors.All(d=>d.IsSpawned)&&binding.restrictedDoor.IsLocked,"All 24 source doors spawn with cabin locked");
             Check(FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Count(l=>l.enabled&&l.gameObject.activeInHierarchy)==1,"Exactly one owner listener");
             Check(FindObjectsByType<Camera>(FindObjectsSortMode.None).Count(c=>c.enabled&&c.gameObject.activeInHierarchy)==1,"Exactly one owner camera");
+            Check(audio.UsingPlayerView&&!audio.menuListener.enabled&&!audio.menuCamera.enabled&&guard.Check()==1,"Menu audio/view hands off to the actual owner without duplicates");
+            controls.OpenSettings();yield return null;
+            Check(controls.IsOpen&&player.IsGameplayInputCaptured,"Session controls capture movement and fire");
+            controls.fov.value=80;Check(Mathf.Abs(player.GetComponentInChildren<Camera>().fieldOfView-80)<.01f,"Field-of-view control changes the actual owner camera");
+            controls.fov.value=originalFov;controls.resume.onClick.Invoke();yield return null;
+            Check(!controls.IsOpen&&!player.IsGameplayInputCaptured,"Continue releases the existing session capture owner");
             var view=player.GetComponentInChildren<LocalWeaponView>(true);
             Check(view&&view.RecoilPivot&&view.RecoilPivot.GetComponentsInChildren<Renderer>(true).Length>=4,"Visible local weapon geometry");
             Capture("02-gameplay.png");yield return new WaitForSecondsRealtime(.15f);
@@ -91,6 +119,26 @@ namespace TemporalContract.Environment.Testing
                 for(int i=0;i<11;i++)binding.map.Select(i);
                 binding.map.Close();Check(!player.IsGameplayInputCaptured,"Board releases actual player input");
             }
+            binding.map.Open();InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.Escape));yield return null;yield return null;
+            Check(!binding.map.IsOpen&&!controls.IsOpen&&!player.IsGameplayInputCaptured,"Escape closes the board without also opening the session menu");
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.Escape));yield return null;yield return null;
+            Check(controls.IsOpen&&player.IsGameplayInputCaptured,"Escape opens the real session menu once");
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F1));yield return null;yield return null;
+            Check(!controls.IsOpen&&!player.IsGameplayInputCaptured,"F1 closes the real session menu once");
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
+            var playerMove=typeof(NetworkFpsPlayer).GetMethod("MoveHorizontal",Private);int beforeSteps=player.GetComponent<PlayerFootsteps>().PlayedSteps;
+            for(int i=0;i<25;i++){playerMove.Invoke(player,new object[]{Vector2.up,.016f});yield return null;}
+            Check(player.GetComponent<PlayerFootsteps>().PlayedSteps>beforeSteps,"Actual grounded travel produces spatial foot-contact audio");
+            Place(binding.movableCover.transform.position+Vector3.right*.8f);
+            Check(Request(binding.movableCover)&&binding.movableCover.IsHeldBy(player.OwnerClientId),"Actual cover pickup records the host-owned holder");
+            Place(binding.attackerSpawn.position);player.transform.rotation=binding.attackerSpawn.rotation;yield return null;yield return null;
+            var router=player.GetComponent<InteractionRouter>();
+            Check(ReferenceEquals(typeof(InteractionRouter).GetField("currentTarget",Private).GetValue(router),binding.movableCover),"Held cover remains the placement target above the camera ray");
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.E));yield return null;yield return null;
+            Check(!binding.movableCover.IsHeld,"E places the held cover through the production router");
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
             var weapon=player.GetComponent<NetworkHitscanWeapon>();
             Check(weapon.Ammunition==12,"Real magazine starts full");weapon.RequestFire();
             yield return new WaitForSecondsRealtime(.1f);
@@ -163,6 +211,11 @@ namespace TemporalContract.Environment.Testing
             Capture("03-results.png");yield return new WaitForSecondsRealtime(.15f);
             adapter.Disconnect();yield return new WaitForSecondsRealtime(.3f);
             Check(!manager.IsListening&&binding.hud.CurrentPhase==SessionPhase.Disconnected,"Disconnect restores the real menu");
+            Check(!NetworkFpsPlayer.LocalOwner&&audio.menuListener.enabled&&audio.menuCamera.enabled&&guard.Check()==1,"Disconnect restores one menu listener with no stale owner");
+            practice.onClick.Invoke();yield return new WaitForSecondsRealtime(.4f);
+            Check(manager.IsHost&&RoundCoordinator.Instance.IsGameplayActive&&NetworkFpsPlayer.LocalOwner,"A fresh practice session starts again without Editor restart");
+            Check(guard.Check()==1&&audio.UsingPlayerView,"Re-host keeps exactly one owner listener");
+            adapter.Disconnect();yield return new WaitForSecondsRealtime(.3f);Check(guard.Check()==1&&!audio.UsingPlayerView,"Second disconnect returns audio ownership to the menu");
         }
         private bool Request(NetworkInteractable target) => target.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,target.NetworkObjectId));
         private void Place(Vector3 value)

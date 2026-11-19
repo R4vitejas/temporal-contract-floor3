@@ -47,6 +47,12 @@ namespace TemporalContract.Interactions
 
         public bool IsHeld => holderClientId.Value != NoHolder;
         public bool IsParked => parked.Value;
+        public bool IsHeldBy(ulong clientId)=>holderClientId.Value==clientId;
+        public static MovableCover FindHeldBy(ulong clientId)
+        {
+            foreach(var cover in FindObjectsByType<MovableCover>())if(cover.IsSpawned&&cover.IsHeldBy(clientId))return cover;
+            return null;
+        }
 
         private void Awake()
         {

@@ -2,6 +2,7 @@ using TemporalContract.Networking;
 using TemporalContract.Combat;
 using TemporalContract.Players;
 using TemporalContract.Rounds;
+using TemporalContract.Feedback;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using Unity.Netcode.Transports.UTP;
@@ -39,14 +40,17 @@ namespace TemporalContract.EditorTools
             body.name = "Body";
             body.transform.SetParent(player.transform, false);
             body.transform.localPosition = Vector3.up;
+            body.transform.localPosition=Vector3.up*.9f;body.transform.localScale=new Vector3(.6f,.9f,.6f);
             Object.DestroyImmediate(body.GetComponent<CapsuleCollider>());
             player.AddComponent<CharacterController>();
             player.GetComponent<CharacterController>().center = Vector3.up;
+            var capsule=player.GetComponent<CharacterController>();capsule.height=1.8f;capsule.radius=.3f;capsule.center=Vector3.up*.9f;capsule.skinWidth=.03f;capsule.stepOffset=.05f;
             player.AddComponent<NetworkObject>();
             player.AddComponent<OwnerNetworkTransform>();
             NetworkFpsPlayer controller = player.AddComponent<NetworkFpsPlayer>();
             player.AddComponent<NetworkPlayerHealth>();
             player.AddComponent<NetworkHitscanWeapon>();
+            player.AddComponent<PlayerFootsteps>();player.AddComponent<PlayerAppearance>();
             InteractionRouter router = player.AddComponent<InteractionRouter>();
 
             GameObject view = new GameObject("OwnerCamera");
@@ -57,6 +61,10 @@ namespace TemporalContract.EditorTools
             Camera camera = view.AddComponent<Camera>();
             camera.nearClipPlane = 0.03f;
             view.AddComponent<AudioListener>();
+            var weaponView=view.AddComponent<LocalWeaponView>();
+            weaponView.bodyMaterial=AssetDatabase.LoadAssetAtPath<Material>("Assets/Project/Feedback/Materials/Game_GunMetal.mat");
+            weaponView.accentMaterial=AssetDatabase.LoadAssetAtPath<Material>("Assets/Project/Feedback/Materials/Game_GunGrip.mat");
+            weaponView.flashMaterial=AssetDatabase.LoadAssetAtPath<Material>("Assets/Project/Feedback/Materials/Game_MuzzleFlash.mat");
             router.Configure(camera, controller, controller);
 
             PrefabUtility.SaveAsPrefabAsset(player, PlayerPrefabPath);
@@ -83,6 +91,7 @@ namespace TemporalContract.EditorTools
             body.transform.localScale = new Vector3(0.75f, 0.9f, 0.75f);
             vip.AddComponent<NetworkObject>();
             vip.AddComponent<VipHealth>();
+            vip.AddComponent<VipObjectiveMarker>();
             PrefabUtility.SaveAsPrefabAsset(vip, VipPrefabPath);
             Object.DestroyImmediate(vip);
         }

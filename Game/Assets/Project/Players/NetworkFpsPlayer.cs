@@ -26,6 +26,7 @@ namespace TemporalContract.Players
         private NetworkPlayerHealth health;
 
         public static NetworkFpsPlayer LocalOwner { get; private set; }
+        public static event System.Action<NetworkFpsPlayer> LocalOwnerChanged;
         public new ulong OwnerClientId => NetworkObject != null ? NetworkObject.OwnerClientId : ulong.MaxValue;
         public Vector3 Position => transform.position;
         public bool IsLocalOwner => IsOwner;
@@ -72,20 +73,31 @@ namespace TemporalContract.Players
                 Cursor.visible = true;
                 InteractionRouter router = GetComponent<InteractionRouter>();
                 router?.Configure(playerCamera, this, this);
+                ApplyViewPreferences();
+                LocalOwnerChanged?.Invoke(this);
             }
         }
 
         public override void OnNetworkDespawn()
         {
-            if (IsOwner)
+            bool wasLocal=LocalOwner==this||IsOwner;
+            if(audioListener)audioListener.enabled=false;
+            if(playerCamera)playerCamera.gameObject.SetActive(false);
+            if(LocalOwner==this)
             {
-                if (LocalOwner == this)
-                {
-                    LocalOwner = null;
-                }
+                LocalOwner=null;LocalOwnerChanged?.Invoke(null);
+            }
+            if(wasLocal)
+            {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+        }
+        public void ApplyViewPreferences()
+        {
+            if(!IsOwner)return;
+            mouseSensitivity=GamePreferences.Sensitivity;
+            if(playerCamera)playerCamera.fieldOfView=GamePreferences.FieldOfView;
         }
 
         private void Update()

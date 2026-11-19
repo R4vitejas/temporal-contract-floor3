@@ -65,6 +65,7 @@ namespace TemporalContract.UI.Hud
                 localReady=lobby&&lobby.IsReady(local),remoteReady=lobby&&remote&&lobby.IsReady(remote.OwnerClientId),
                 alive=health&&health.IsAlive,health=health?health.CurrentHealth:0,maxHealth=health?health.MaximumHealth:100,
                 ammo=weapon?weapon.Ammunition:0,magazineSize=weapon?weapon.MagazineSize:12,reloading=weapon&&weapon.IsReloading,
+                reloadProgress=weapon&&weapon.IsReloading?Mathf.Clamp01(1-(float)weapon.ReloadSecondsRemaining/weapon.ReloadDuration):0,
                 isPractice=round&&round.IsPractice, timeRemainingSeconds=round?(float)Math.Ceiling(round.TimeRemaining):-1,
                 roundNumber=round?round.RoundNumber:0, keycardKnown=keycard!=null,hasKeycard=keycard&&keycard.IsHeldBy(local),
                 role=round&&lobby&&lobby.MatchStarted?(round.AttackerClientId==local?PlayerRole.Attacker:PlayerRole.Defender):PlayerRole.None,
@@ -83,6 +84,10 @@ namespace TemporalContract.UI.Hud
                         round.Phase==MatchPhase.MatchResult?SessionPhase.MatchEnd:SessionPhase.Lobby;
             }
             if(state.isPractice)state.matchResult=round&&round.LastRoundOutcome==RoundOutcome.AttackersWon?"PRACTICE COMPLETE — VIP ELIMINATED":"PRACTICE ENDED";
+            else if(round&&round.Phase==MatchPhase.MatchResult)
+                state.matchResult=round.MatchWinnerClientId==ulong.MaxValue?"MATCH DRAW":round.MatchWinnerClientId==local?"VICTORY":"DEFEAT";
+            if(round&&round.Phase==MatchPhase.RoundResult&&!state.isPractice)
+                state.roundResult=((state.role==PlayerRole.Attacker)==(round.LastRoundOutcome==RoundOutcome.AttackersWon))?"ROUND WON":"ROUND LOST";
             return true;
         }
         public void Host(ushort port) {session.ConfigureEndpoint("127.0.0.1",port);session.StartHost();nextRefresh=0;}

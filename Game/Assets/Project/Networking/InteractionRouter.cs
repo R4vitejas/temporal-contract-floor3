@@ -2,6 +2,7 @@ using System;
 using TemporalContract.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TemporalContract.Interactions;
 
 namespace TemporalContract.Networking
 {
@@ -64,8 +65,10 @@ namespace TemporalContract.Networking
         {
             IInteractionTarget nextTarget = null;
             InteractionPrompt nextPrompt = default;
-
-            if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
+            // A held cover stays placeable even when it sits below the centre camera ray.
+            var held=MovableCover.FindHeldBy(actor.OwnerClientId);
+            if(held!=null&&held.TryGetPrompt(actor,out nextPrompt))nextTarget=held;
+            else if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
                     out RaycastHit hit, maxDistance, targetLayers, QueryTriggerInteraction.Ignore))
             {
                 MonoBehaviour[] behaviours = hit.collider.GetComponentsInParent<MonoBehaviour>(true);
