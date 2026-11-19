@@ -90,6 +90,17 @@ namespace TemporalContract.Networking
             return true;
         }
 
+        /// <summary>Explicit host-only practice; the ordinary two-player Ready/Start gate is unchanged.</summary>
+        public bool StartPractice()
+        {
+            if(!IsServer || matchStarted.Value || NetworkManager.ConnectedClientsIds.Count!=1 || RoundCoordinator.Instance==null)return false;
+            attackerClientId.Value=NetworkManager.ServerClientId;
+            matchStarted.Value=true;
+            RoundCoordinator.Instance.BeginPracticeMatch();
+            StateChanged?.Invoke();
+            return true;
+        }
+
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void SetReadyRpc(bool ready, RpcParams rpcParams = default)
         {

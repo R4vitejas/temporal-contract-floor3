@@ -44,6 +44,7 @@ namespace TemporalContract.Feedback
         private float damageAlpha;
 
         public float CurrentRecoilDegrees => recoil;
+        public void BindView(Transform pivot,GameObject flash) {recoilPivot=pivot;muzzleFlash=flash;}
 
         public void NotifyShot(Vector3 muzzleWorldPosition)
         {

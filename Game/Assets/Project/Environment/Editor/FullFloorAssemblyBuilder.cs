@@ -6,6 +6,9 @@ using TemporalContract.Interactions;
 using TemporalContract.Networking;
 using TemporalContract.UI.Board;
 using TemporalContract.UI.Hud;
+using TemporalContract.Core;
+using TemporalContract.Feedback;
+using UnityEngine.UI;
 using Unity.Netcode;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -69,6 +72,7 @@ namespace TemporalContract.Environment.EditorTools
                 SceneManager.SetActiveScene(scene);
                 var root = new GameObject("Full Floor Production Bindings");
                 var bindings = root.AddComponent<FullFloorSceneBindings>();
+                bindings.sourceManifest=AssetDatabase.LoadAssetAtPath<TextAsset>(Root+"/Data/full-floor-manifest.json");
                 var floor = Instantiate(Root + "/Prefabs/Floor3FullEnvironment.prefab", root.transform);
                 PrefabUtility.UnpackPrefabInstance(floor, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
                 var sun = new GameObject("Floor daylight").AddComponent<Light>();
@@ -130,6 +134,33 @@ namespace TemporalContract.Environment.EditorTools
                 footprint.transform.localPosition=Vector3.zero;footprint.transform.localScale=Vector3.one;
                 footprint.center=new Vector3(0,.45f,0);footprint.size=new Vector3(.43f,.9f,.67f);
                 FloorAssetBuilder.PlaceModel("Floor3Chair",bindings.movableCover.transform,Vector3.zero);
+                var layout=root.AddComponent<GameplaySceneLayout>();
+                layout.attackerSpawn=bindings.attackerSpawn;layout.defenderSpawn=bindings.defenderSpawn;layout.vipSpawn=bindings.vipSpawn;
+                bindings.attackerSpawn.name="Attacker spawn";bindings.defenderSpawn.name="Defender spawn";bindings.vipSpawn.name="VIP spawn";
+                var adapter=root.AddComponent<ProductionPresentationAdapter>();
+                adapter.session=bindings.session;adapter.hud=bindings.hud;adapter.keycard=bindings.keycard;adapter.map=bindings.map;
+                Set(bindings.hud,"providerComponent",adapter);Set(bindings.hud,"actionsComponent",adapter);
+                var hudSettings=new SerializedObject(bindings.hud);
+                var host=(Button)hudSettings.FindProperty("hostButton").objectReferenceValue;
+                var practice=UnityEngine.Object.Instantiate(host.gameObject,host.transform.parent).GetComponent<Button>();
+                practice.name="PracticeButton";practice.GetComponentInChildren<Text>(true).text="Solo practice";
+                var practiceRect=(RectTransform)practice.transform;practiceRect.anchoredPosition=new Vector2(0,-210);practiceRect.sizeDelta=new Vector2(460,56);
+                Set(bindings.hud,"practiceButton",practice);
+                var hudRoot=(GameObject)hudSettings.FindProperty("hudRoot").objectReferenceValue;
+                var hooks=presentation.GetComponentInChildren<CombatFeedbackHooks>(true);
+                var combat=root.AddComponent<ProductionCombatPresenter>();combat.hooks=hooks;
+                combat.presenter=presentation.GetComponentInChildren<FeedbackPresenter>(true);
+                combat.library=AssetDatabase.LoadAssetAtPath<FeedbackCueLibrary>("Assets/Project/Feedback/FeedbackCueLibrary.asset");
+                var hit=new GameObject("Confirmed hit",typeof(RectTransform),typeof(CanvasGroup),typeof(Text));
+                hit.transform.SetParent(hudRoot.transform,false);var hitRect=(RectTransform)hit.transform;
+                hitRect.anchorMin=hitRect.anchorMax=new Vector2(.5f,.5f);hitRect.sizeDelta=new Vector2(50,50);
+                var hitText=hit.GetComponent<Text>();hitText.text="×";hitText.font=host.GetComponentInChildren<Text>(true).font;hitText.fontSize=42;hitText.alignment=TextAnchor.MiddleCenter;hitText.raycastTarget=false;
+                hit.GetComponent<CanvasGroup>().alpha=0;hit.GetComponent<CanvasGroup>().blocksRaycasts=false;
+                var damage=new GameObject("Damage flash",typeof(RectTransform),typeof(CanvasGroup),typeof(Image));damage.transform.SetParent(hudRoot.transform,false);
+                var damageRect=(RectTransform)damage.transform;damageRect.anchorMin=Vector2.zero;damageRect.anchorMax=Vector2.one;damageRect.offsetMin=damageRect.offsetMax=Vector2.zero;
+                damage.GetComponent<Image>().color=new Color(.8f,0,0,.35f);damage.GetComponent<Image>().raycastTarget=false;
+                damage.GetComponent<CanvasGroup>().alpha=0;damage.GetComponent<CanvasGroup>().blocksRaycasts=false;
+                Set(hooks,"hitMarker",hit.GetComponent<CanvasGroup>());Set(hooks,"damageFlash",damage.GetComponent<CanvasGroup>());
                 Physics.SyncTransforms();
                 VerifyPlacement(scene,bindings);
                 ValidateMain(scene);
@@ -142,7 +173,7 @@ namespace TemporalContract.Environment.EditorTools
                 ValidateMain(scene);
                 var settings=EditorBuildSettings.scenes.Where(s=>s.path!=MainPath).ToList();
                 settings.Add(new EditorBuildSettingsScene(MainPath,false)); EditorBuildSettings.scenes=settings.ToArray();
-                Debug.Log("FULL_FLOOR_MAIN_PLACED: 24 source doors, keycard/panel/switch/cover, six boards, reviewed presentation/session; production spawn/capsule, eligibility and HUD adapter acceptance pending. Main remains disabled.");
+                Debug.Log("FULL_FLOOR_MAIN_PLACED: full-floor production systems, scene-driven player/VIP poses, real HUD state/actions, practice entry and combat presentation. Runtime acceptance remains separate.");
             }
             finally
             {
