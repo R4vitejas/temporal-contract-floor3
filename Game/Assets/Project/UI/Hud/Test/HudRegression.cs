@@ -112,6 +112,19 @@ namespace TemporalContract.UI.Hud.Testing
             Check("missing actions are ignored without error", provider.Calls.Count == callsBefore && Active("MessageText"));
             ui.Bind(provider, provider);
 
+            // runtime bindings must survive disable/enable (review of #22)
+            provider.ApplyPreset(4);
+            ui.enabled = false;
+            ui.enabled = true;
+            Check("state survives disable/enable", Active("LobbyPanel"));
+            provider.ApplyPreset(1);
+            Check("provider updates still reach the HUD after re-enable", Active("MainMenuPanel") && !Active("LobbyPanel"));
+            provider.Calls.Clear();
+            SetInput("PortInput", "7777");
+            B("HostButton").onClick.Invoke();
+            Check("button callbacks still work after re-enable", provider.Calls.Contains("Host 7777"));
+            ui.BindRouter(null);
+
             // prompt and short messages
             ui.SetPrompt(new InteractionPrompt("Open door", "E", true));
             Check("prompt shows label and hint", Active("PromptText") && T("PromptText").Contains("Open door") && T("PromptText").Contains("E"));

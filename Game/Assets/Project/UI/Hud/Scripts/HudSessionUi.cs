@@ -114,7 +114,21 @@ namespace TemporalContract.UI.Hud
             BindComponents();
             if (provider != null)
             {
+                provider.StateChanged -= Refresh;
                 provider.StateChanged += Refresh;
+            }
+
+            // Runtime router/feedback bindings survive a disable/enable cycle.
+            if (boundRouter != null)
+            {
+                boundRouter.PromptChanged -= SetPrompt;
+                boundRouter.PromptChanged += SetPrompt;
+            }
+
+            if (boundFeedback != null)
+            {
+                boundFeedback.FeedbackRaised -= OnFeedback;
+                boundFeedback.FeedbackRaised += OnFeedback;
             }
 
             Refresh();
@@ -127,14 +141,30 @@ namespace TemporalContract.UI.Hud
                 provider.StateChanged -= Refresh;
             }
 
-            BindRouter(null);
-            BindFeedback(null);
+            // Unsubscribe only; keep the references so OnEnable can re-subscribe.
+            if (boundRouter != null)
+            {
+                boundRouter.PromptChanged -= SetPrompt;
+            }
+
+            if (boundFeedback != null)
+            {
+                boundFeedback.FeedbackRaised -= OnFeedback;
+            }
         }
 
         private void BindComponents()
         {
-            provider = providerComponent as IPresentationProvider;
-            actions = actionsComponent as IPresentationActions;
+            // Inspector references are only a default; a runtime Bind() always wins.
+            if (provider == null)
+            {
+                provider = providerComponent as IPresentationProvider;
+            }
+
+            if (actions == null)
+            {
+                actions = actionsComponent as IPresentationActions;
+            }
         }
 
         /// <summary>Attach or replace the provider/actions at runtime (production adapter or a mock).</summary>
