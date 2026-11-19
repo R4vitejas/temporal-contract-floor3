@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52d72728773e67a468fe02c65101ad4d, type: 3}
+  m_Name: Floor3Layout
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.UI.Board.FloorMapLayout
+  artwork: {fileID: 0}
+  artworkTexture: {fileID: 2800000, guid: bd954977187f07f29bb7229eb32d0a00, type: 3}
+  rooms:
+  - id: ClassRoom01
+    displayName: C1
+    area:
+      serializedVersion: 2
+      x: 0.2501558
+      y: 0.20280346
+      width: 0.08326938
+      height: 0.1590574
+  - id: ClassRoom02
+    displayName: C2
+    area:
+      serializedVersion: 2
+      x: 0.58330667
+      y: 0.20272379
+      width: 0.08357191
+      height: 0.1590574
+  - id: ClassRoom03
+    displayName: C3
+    area:
+      serializedVersion: 2
+      x: 0.66398776
+      y: 0.20272405
+      width: 0.08304009
+      height: 0.1590574
+  - id: ClassRoom04
+    displayName: C4
+    area:
+      serializedVersion: 2
+      x: 0.78707755
+      y: 0.5467047
+      width: 0.083040014
+      height: 0.1590574
+  - id: ClassRoom05
+    displayName: C5
+    area:
+      serializedVersion: 2
+      x: 0.66352683
+      y: 0.60518986
+      width: 0.08304009
+      height: 0.15905738
+  - id: ClassRoom06
+    displayName: C6
+    area:
+      serializedVersion: 2
+      x: 0.58353615
+      y: 0.60518986
+      width: 0.083342426
+      height: 0.15905738
+  - id: Room1
+    displayName: Classroom
+    area:
+      serializedVersion: 2
+      x: 0.12913273
+      y: 0.7027381
+      width: 0.08304025
+      height: 0.2601863
+  - id: PG Students
+    displayName: PG room
+    area:
+      serializedVersion: 2
+      x: 0.33168077
+      y: 0.20280355
+      width: 0.041288078
+      height: 0.1590574
+  - id: Seminar
+    displayName: Seminar
+    area:
+      serializedVersion: 2
+      x: 0.42879194
+      y: 0.50767297
+      width: 0.13579594
+      height: 0.2396188
+  - id: Laboratory2
+    displayName: Lab
+    area:
+      serializedVersion: 2
+      x: 0.7594865
+      y: 0.19924878
+      width: 0.11069331
+      height: 0.20482433
+  - id: Laboratory3
+    displayName: Lab
+    area:
+      serializedVersion: 2
+      x: 0.7556139
+      y: 0.40070376
+      width: 0.11453961
+      height: 0.14761135
+  showRegionLabels: 1
