@@ -20,6 +20,31 @@ namespace TemporalContract.UI.Board
         }
 
         public Sprite artwork;
+        [Tooltip("Used when no Sprite is set, so a plain texture asset (default importer) can be used as is.")]
+        public Texture2D artworkTexture;
+        /// <summary>The configured sprite, or one created from <see cref="artworkTexture"/>.</summary>
+        public Sprite ResolveArtwork()
+        {
+            if (artwork != null)
+            {
+                return artwork;
+            }
+
+            if (artworkTexture == null)
+            {
+                return null;
+            }
+
+            if (runtimeSprite == null || runtimeSprite.texture != artworkTexture)
+            {
+                runtimeSprite = Sprite.Create(artworkTexture, new Rect(0f, 0f, artworkTexture.width, artworkTexture.height),
+                    new Vector2(0.5f, 0.5f));
+            }
+
+            return runtimeSprite;
+        }
+
+        [NonSerialized] private Sprite runtimeSprite;
         public Room[] rooms = Array.Empty<Room>();
         [Tooltip("Draw each room's name inside its region (useful for the placeholder image).")]
         public bool showRegionLabels = true;

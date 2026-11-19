@@ -198,7 +198,7 @@ namespace TemporalContract.UI.Board
 
             if (artworkImage != null)
             {
-                artworkImage.sprite = layout.artwork;
+                artworkImage.sprite = layout.ResolveArtwork();
             }
 
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");

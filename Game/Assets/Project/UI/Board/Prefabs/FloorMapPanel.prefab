@@ -121,7 +121,7 @@ MonoBehaviour:
   regionsRoot: {fileID: 8164409672653804471}
   roomLabel: {fileID: 1429007745156838784}
   closeButton: {fileID: 4087854571351055798}
-  layout: {fileID: 11400000, guid: 368b96f464ccbe445bfd4b3514995d1f, type: 2}
+  layout: {fileID: 11400000, guid: 5945ec262157c0b4e98284b8f71087b4, type: 2}
   captureComponent: {fileID: 0}
   regionIdle: {r: 1, g: 1, b: 1, a: 0.02}
   regionSelected: {r: 1, g: 0.85, b: 0.2, a: 0.45}

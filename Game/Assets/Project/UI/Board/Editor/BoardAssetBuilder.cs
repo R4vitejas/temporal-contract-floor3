@@ -19,6 +19,9 @@ namespace TemporalContract.UI.Board.EditorTools
         private const string Root = "Assets/Project/UI/Board";
         private const string ArtPath = Root + "/Art/PlaceholderFloor.png";
         private const string LayoutPath = Root + "/PlaceholderFloorLayout.asset";
+        private const string Floor3MapPath = "Assets/Project/Environment/Data/FullFloorMap.png";
+        private const string Floor3RegionsPath = "Assets/Project/Environment/Data/full-floor-map-regions.json";
+        private const string Floor3LayoutPath = Root + "/Floor3Layout.asset";
         private const string AltLayoutPath = Root + "/AlternateTestLayout.asset";
         private const string PrefabPath = Root + "/Prefabs/FloorMapPanel.prefab";
         private const string TestScene = Root + "/Scenes/BoardTest.unity";
@@ -35,6 +38,7 @@ namespace TemporalContract.UI.Board.EditorTools
             AssetDatabase.Refresh();
             ConfigureSprite();
             BuildLayouts();
+            BuildFloor3Layout();
             BuildPrefab();
             BuildTestScene();
             BuildRegressionScene();
@@ -104,6 +108,56 @@ namespace TemporalContract.UI.Board.EditorTools
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.mipmapEnabled = false;
             importer.SaveAndReimport();
+        }
+
+        [System.Serializable]
+        private sealed class RegionFile
+        {
+            public int width;
+            public int height;
+            public Region[] regions;
+        }
+
+        [System.Serializable]
+        private sealed class Region
+        {
+            public string id;
+            public string label;
+            public float[] pixelRect;
+        }
+
+        /// <summary>
+        /// Builds Floor3Layout from the shared floor map. The JSON is top-left origin in pixels; the layout is
+        /// bottom-left normalized: [x,y,w,h] -> [x/W, 1-(y+h)/H, w/W, h/H].
+        /// </summary>
+        private static void BuildFloor3Layout()
+        {
+            AssetDatabase.DeleteAsset(Floor3LayoutPath);
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(Floor3MapPath);
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(Floor3RegionsPath);
+            if (texture == null || json == null)
+            {
+                Debug.LogWarning("[Board] Floor map or region JSON not found; keeping the placeholder layout.");
+                return;
+            }
+
+            RegionFile data = JsonUtility.FromJson<RegionFile>(json.text);
+            var layout = ScriptableObject.CreateInstance<FloorMapLayout>();
+            layout.artworkTexture = texture;
+            layout.showRegionLabels = true;
+            layout.rooms = new FloorMapLayout.Room[data.regions.Length];
+            for (int i = 0; i < data.regions.Length; i++)
+            {
+                float[] r = data.regions[i].pixelRect;
+                layout.rooms[i] = new FloorMapLayout.Room
+                {
+                    id = data.regions[i].id,
+                    displayName = data.regions[i].label,
+                    area = new Rect(r[0] / data.width, 1f - (r[1] + r[3]) / data.height, r[2] / data.width, r[3] / data.height),
+                };
+            }
+
+            AssetDatabase.CreateAsset(layout, Floor3LayoutPath);
         }
 
         private static void BuildLayouts()
@@ -194,7 +248,10 @@ namespace TemporalContract.UI.Board.EditorTools
             so.FindProperty("regionsRoot").objectReferenceValue = (RectTransform)regions.transform;
             so.FindProperty("roomLabel").objectReferenceValue = roomName;
             so.FindProperty("closeButton").objectReferenceValue = closeButton;
-            so.FindProperty("layout").objectReferenceValue = AssetDatabase.LoadAssetAtPath<FloorMapLayout>(LayoutPath);
+            var floor3 = AssetDatabase.LoadAssetAtPath<FloorMapLayout>(Floor3LayoutPath);
+            so.FindProperty("layout").objectReferenceValue = floor3 != null
+                ? floor3
+                : AssetDatabase.LoadAssetAtPath<FloorMapLayout>(LayoutPath);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
