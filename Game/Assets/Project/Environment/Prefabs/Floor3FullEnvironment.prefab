@@ -285471,6 +285471,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[1]'
       value:
       objectReference: {fileID: 2100000, guid: fcbd0086f2254e07f8ebdb61160abe60, type: 2}
+    - target: {fileID: 160326354205822185, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
+      propertyPath: m_Mesh
+      value:
+      objectReference: {fileID: 4300000, guid: fe99abe007f33456c9e34f50ec3dd7ba, type: 2}
     - target: {fileID: 919132149155446097, guid: a847efa87b8e9239489516f328a5d3ba, type: 3}
       propertyPath: m_Name
       value: Floor3Full

@@ -73,6 +73,7 @@ namespace TemporalContract.Environment.EditorTools
             Directory.CreateDirectory(Root+"/Collision");
             AssetDatabase.Refresh();
             FullFloorCollisionBuilder.Build(root,renderers);
+            SeminarGeometryRefinement.Apply(root);
 
             var player = new GameObject("Full floor inspection player");
             player.transform.position = new Vector3(-2.5f,.1f,-8f);
