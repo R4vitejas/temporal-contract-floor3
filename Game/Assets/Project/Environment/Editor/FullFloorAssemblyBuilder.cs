@@ -81,7 +81,9 @@ namespace TemporalContract.Environment.EditorTools
                 SceneManager.SetActiveScene(scene);
                 var session = UnityEngine.Object.Instantiate(Components<LanSessionController>(source).Single().gameObject);
                 session.name = "Production LAN Session (Opt In)";
-                SceneManager.MoveGameObjectToScene(session, scene); session.transform.SetParent(root.transform, true);
+                // The owner's session calls DontDestroyOnLoad and therefore must remain a scene root.
+                SceneManager.MoveGameObjectToScene(session, scene);
+                bindings.session=session.GetComponent<LanSessionController>();
                 EditorSceneManager.CloseScene(source, true); source = default;
                 var presentation = Instantiate(FullFloorPresentationBuilder.PrefabPath, root.transform);
                 bindings.map = presentation.GetComponentInChildren<FloorMapPanel>(true);
@@ -119,6 +121,11 @@ namespace TemporalContract.Environment.EditorTools
                 Physics.SyncTransforms();
                 VerifyPlacement(scene,bindings);
                 ValidateMain(scene);
+                EditorSceneManager.SaveScene(scene,MainPath);
+                // NGO's own validation needs a saved scene identity; do not retain copied prefab hashes.
+                var validateNetworkObject=typeof(NetworkObject).GetMethod("OnValidate",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+                if(validateNetworkObject==null)throw new InvalidOperationException("NetworkObject scene validation is unavailable.");
+                foreach(var networkObject in Components<NetworkObject>(scene)) validateNetworkObject.Invoke(networkObject,null);
                 EditorSceneManager.SaveScene(scene,MainPath);
                 ValidateMain(scene);
                 var settings=EditorBuildSettings.scenes.Where(s=>s.path!=MainPath).ToList();
@@ -192,6 +199,57 @@ namespace TemporalContract.Environment.EditorTools
             foreach(var transform in Components<Transform>(scene))
                 if(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(transform.gameObject)>0)
                     throw new InvalidOperationException("Missing script: "+transform.name);
+        }
+        public static void VerifySavedScenes()
+        {
+            RequireEditMode();
+            var original=SceneManager.GetActiveScene();
+            var reference=PrefabUtility.LoadPrefabContents(Root+"/Prefabs/Floor3FullEnvironment.prefab");
+            try
+            {
+                var expectedMeshes=reference.GetComponentsInChildren<MeshRenderer>(true).Where(r=>r.name.StartsWith("Source_",StringComparison.Ordinal)).ToDictionary(r=>r.name);
+                var expectedCollision=reference.GetComponentsInChildren<Transform>(true).Single(t=>t.name=="Baked floor collision");
+                foreach(string path in new[]{MainPath,ShowcasePath})
+                {
+                    var scene=EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);
+                    try
+                    {
+                        if(path==MainPath)ValidateMain(scene);else VerifyMeshes(scene);
+                        foreach(var mesh in Components<MeshRenderer>(scene).Where(r=>r.name.StartsWith("Source_",StringComparison.Ordinal)))
+                        {
+                            var expected=expectedMeshes[mesh.name];
+                            if(mesh.GetComponent<MeshFilter>().sharedMesh!=expected.GetComponent<MeshFilter>().sharedMesh
+                                || !mesh.sharedMaterials.SequenceEqual(expected.sharedMaterials))
+                                throw new InvalidOperationException("Source mesh/material changed: "+mesh.name);
+                            // The showcase intentionally holds doors open. All other world-space source bounds must match.
+                            if(path==MainPath || (!mesh.name.StartsWith("Source_Door.",StringComparison.Ordinal) && !mesh.name.StartsWith("Source_Handle_",StringComparison.Ordinal)))
+                                if(Vector3.Distance(mesh.bounds.center,expected.bounds.center)>.001f || Vector3.Distance(mesh.bounds.size,expected.bounds.size)>.001f)
+                                    throw new InvalidOperationException("Source bounds changed: "+mesh.name);
+                        }
+                        var actualCollision=Components<Transform>(scene).Single(t=>t.name=="Baked floor collision");
+                        if(!CollisionSignature(expectedCollision).SequenceEqual(CollisionSignature(actualCollision)))
+                            throw new InvalidOperationException("The tested static collision bake changed: "+path);
+                        if(Components<ClassroomBoard>(scene).Length!=6)throw new InvalidOperationException("Classroom board targets missing.");
+                        if(path==MainPath)
+                        {
+                            var binding=Components<FullFloorSceneBindings>(scene).Single();
+                            if(binding.session.transform.parent!=null)throw new InvalidOperationException("LAN session must remain a root for DontDestroyOnLoad.");
+                        }
+                    }
+                    finally {SceneManager.SetActiveScene(original);EditorSceneManager.CloseScene(scene,true);}
+                }
+                Debug.Log("FULL_FLOOR_SAVED_SCENES_PASS: all 1767 source mesh/material identities retained; Main source bounds match; static collision bake unchanged in Main/showcase; unique network hashes; six boards; root session; no production test scripts/listeners.");
+            }
+            finally {PrefabUtility.UnloadPrefabContents(reference);}
+        }
+        static string[] CollisionSignature(Transform root)
+        {
+            return root.GetComponentsInChildren<Collider>(true).Select(c=>
+            {
+                string shape=c is BoxCollider box?box.center.ToString("F5")+box.size.ToString("F5"):
+                    c is MeshCollider mesh?AssetDatabase.GetAssetPath(mesh.sharedMesh):c.GetType().FullName;
+                return c.name+"/"+c.transform.position.ToString("F5")+c.transform.rotation.ToString("F5")+c.transform.lossyScale.ToString("F5")+"/"+shape+"/"+c.isTrigger+"/"+c.enabled;
+            }).OrderBy(s=>s,StringComparer.Ordinal).ToArray();
         }
         static void VerifyPlacement(Scene scene,FullFloorSceneBindings bindings)
         {

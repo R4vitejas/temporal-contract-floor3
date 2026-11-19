@@ -13,6 +13,7 @@ namespace TemporalContract.Environment
     public sealed class FullFloorSceneBindings : MonoBehaviour
     {
         public Transform attackerSpawn, defenderSpawn, vipSpawn;
+        public LanSessionController session;
         public NetworkDoor[] doors;
         public NetworkDoor restrictedDoor;
         public KeycardPickup keycard;
