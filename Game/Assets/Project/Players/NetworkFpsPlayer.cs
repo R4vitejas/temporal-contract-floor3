@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using TemporalContract.Combat;
+using TemporalContract.Rounds;
 using TemporalContract.Core;
 using TemporalContract.Networking;
 using Unity.Netcode;
@@ -21,19 +23,25 @@ namespace TemporalContract.Players
         private float verticalSpeed;
         private bool alive = true;
         private readonly HashSet<Object> inputCaptureOwners = new HashSet<Object>();
+        private NetworkPlayerHealth health;
 
         public static NetworkFpsPlayer LocalOwner { get; private set; }
         public new ulong OwnerClientId => NetworkObject != null ? NetworkObject.OwnerClientId : ulong.MaxValue;
         public Vector3 Position => transform.position;
         public bool IsLocalOwner => IsOwner;
         public bool IsGameplayInputCaptured => inputCaptureOwners.Count > 0
-            || !alive || LobbyNetworkState.Instance == null || !LobbyNetworkState.Instance.MatchStarted;
+            || !alive || (RoundCoordinator.Instance != null
+                ? !RoundCoordinator.Instance.IsGameplayActive
+                : LobbyNetworkState.Instance == null || !LobbyNetworkState.Instance.MatchStarted);
         public float CameraPitch => pitch;
 
         public override void OnNetworkSpawn()
         {
             characterController = GetComponent<CharacterController>();
             characterController.center = Vector3.up;
+            health = GetComponent<NetworkPlayerHealth>();
+            alive = health != null && health.IsAlive;
+            characterController.enabled = alive;
             characterController.enabled = alive;
             if (playerCamera == null)
             {
