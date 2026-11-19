@@ -84,6 +84,18 @@ namespace TemporalContract.Environment.EditorTools
                 // The owner's session calls DontDestroyOnLoad and therefore must remain a scene root.
                 SceneManager.MoveGameObjectToScene(session, scene);
                 bindings.session=session.GetComponent<LanSessionController>();
+                // The session registers its Resources prefabs itself. An independent non-default
+                // empty list avoids importing the editor's automatically populated default list twice.
+                const string listPath=Root+"/Data/FullFloorNetworkPrefabs.asset";
+                var networkPrefabs=AssetDatabase.LoadAssetAtPath<NetworkPrefabsList>(listPath);
+                if(!networkPrefabs)
+                {
+                    networkPrefabs=ScriptableObject.CreateInstance<NetworkPrefabsList>();
+                    AssetDatabase.CreateAsset(networkPrefabs,listPath);
+                }
+                if(networkPrefabs.PrefabList.Count!=0)throw new InvalidOperationException("The full-floor runtime registration list must start empty.");
+                var networkConfig=session.GetComponent<NetworkManager>().NetworkConfig;
+                networkConfig.Prefabs.NetworkPrefabsLists.Clear();networkConfig.Prefabs.NetworkPrefabsLists.Add(networkPrefabs);
                 EditorSceneManager.CloseScene(source, true); source = default;
                 var presentation = Instantiate(FullFloorPresentationBuilder.PrefabPath, root.transform);
                 bindings.map = presentation.GetComponentInChildren<FloorMapPanel>(true);
@@ -234,6 +246,9 @@ namespace TemporalContract.Environment.EditorTools
                         {
                             var binding=Components<FullFloorSceneBindings>(scene).Single();
                             if(binding.session.transform.parent!=null)throw new InvalidOperationException("LAN session must remain a root for DontDestroyOnLoad.");
+                            var lists=binding.session.GetComponent<NetworkManager>().NetworkConfig.Prefabs.NetworkPrefabsLists;
+                            if(lists.Count!=1 || lists[0].PrefabList.Count!=0 || new SerializedObject(lists[0]).FindProperty("IsDefault").boolValue)
+                                throw new InvalidOperationException("Main must use its non-default runtime registration list.");
                         }
                     }
                     finally {SceneManager.SetActiveScene(original);EditorSceneManager.CloseScene(scene,true);}

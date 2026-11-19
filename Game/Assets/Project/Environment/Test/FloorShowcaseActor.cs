@@ -110,6 +110,9 @@ namespace TemporalContract.Environment.Testing
                 {
                     var bounds = board.GetComponent<BoxCollider>().bounds;
                     Vector3 normal = bounds.size.x < bounds.size.z ? Vector3.right : Vector3.forward;
+                    // Opposite classroom wings put their boards on opposite wall faces.
+                    if (!Physics.Raycast(bounds.center + normal, -normal, out RaycastHit hit, 2f, ~0, QueryTriggerInteraction.Ignore)
+                        || hit.collider.GetComponentInParent<ClassroomBoard>() != board) normal = -normal;
                     walkthrough.PlaceForInspection(bounds.center + normal - Vector3.up * walkthrough.view.transform.localPosition.y);
                     walkthrough.view.transform.LookAt(bounds.center);
                     Physics.SyncTransforms();
