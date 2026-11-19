@@ -1,5 +1,15 @@
 # Project status
 
+## Current update — November 19
+
+- PR #16 was merged by Adhithya at `bf41861`. Independent Unity 6000.6.8f1 retests now pass the original occupied-baseline/all-rings-blocked scenario and all 18 emitted cover-regression checks. The cover clears ownership and parks hidden/non-solid when no valid drop exists. The original review finding is resolved; interaction subsystem issues #6/#7 are accepted and closed. Author-reported host/client observations remain distinguished from these independent host-side checks. Full production integration is still pending.
+- Adhithya (@RealAdhi) is coassigned to Sanjana's #8–#11 because her laptop cannot run Unity. Sanjana remains assigned. Both may work in UI/Feedback within the established contracts; Core/Networking/Players/Combat/Rounds and Main ownership are unchanged.
+- PR #20 (`396c7a9`) supplies feedback assets/prefab and passes all 13 independent headless regression checks. Review requests a recoil correction: three shots with the permitted 3-degree kick accumulate 7.5 degrees, exceeding the documented 3-degree maximum. Issue #10 remains open; listening, host/client playback and production bindings are pending. Board/HUD issues #8/#9 have no published PR yet; #11 still needs the integrated verified build.
+- The seminar bench visual repair is committed on `feature/floor-integration`: original bounds/material slots/UVs retained, 988 bench triangles, all 1,767 source meshes and the accepted collision bake preserved. Its inspection scene and shared prefab are saved. The floor branch includes current main's interaction changes. Colours remain deferred by request. The Linux walkthrough/ZIP is rebuilt from `77cd821`; standalone collision and 48-entrance tests pass and all 305 packaged file checksums verify. It remains a dirty-state environment validation build.
+- PR #1 networking and stacked PR #17 combat/rounds are unchanged. Required host/client/recovery evidence, production capsule fit, scene-driven spawn/VIP/reset positions and authoritative eligibility wiring remain pending. Main remains environment preparation, disabled in production builds. Do not merge the superseded cropped PR #18.
+
+Details: [November 19 review record](REVIEW_2026-11-19.md). Earlier sections below are historical and are superseded by this update where they conflict.
+
 ## Full-floor scope correction — November 16
 
 Ravitejas requires the entire supplied floor. The four-room export, map and walkthrough in PR #18 and the dependent Main preparation in PR #19 are prototypes that need full-floor revision before acceptance. Their existing validation results apply only to that prototype. The original Blender files remain unchanged. Live Unity MCP is connected. A separate full-floor inspection scene is now available; Main now uses the full floor; production integration and release acceptance remain pending.

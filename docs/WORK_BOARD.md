@@ -2,6 +2,10 @@
 
 [All issues](https://github.com/R4vitejas/temporal-contract-floor3/issues) · [Single delivery milestone](https://github.com/R4vitejas/temporal-contract-floor3/milestone/1)
 
+## November 19 update
+
+Adhithya (@RealAdhi) is additionally assigned to #8–#11 because Sanjana's laptop cannot run Unity; she remains assigned. He may implement and test UI/Feedback under the existing presentation contracts. Interactions #6/#7 are accepted and closed after the repaired fallback passed independent retests. Feedback PR #20 is under review; board/HUD work remains unpublished. Full-floor/integration draft #19 supersedes cropped prototype #18. See [current status](STATUS.md).
+
 ## Ready foundation
 
 Bootstrap PR #2 is merged on main. Use Unity 6000.6.8f1 and the pinned package lock. Read README, CONTRIBUTING, PROJECT_BRIEF and INTEGRATION before making changes. Do not recreate the project or upgrade packages individually.
@@ -11,11 +15,11 @@ Bootstrap PR #2 is merged on main. Use Unity 6000.6.8f1 and the pinned package l
 | Owner | Issues | Start now | Final integration needs |
 |---|---|---|---|
 | Samatma (@SamatmaAB) | [#3 LAN corrections](https://github.com/R4vitejas/temporal-contract-floor3/issues/3), [#4 combat](https://github.com/R4vitejas/temporal-contract-floor3/issues/4), [#5 rounds](https://github.com/R4vitejas/temporal-contract-floor3/issues/5) | Correct PR #1 first; use a placeholder arena for combat and test-triggered events/mock reset participants for rounds | Real interaction role/death/reset hooks; presentation bindings |
-| Adhithya (@RealAdhi) | [#6 existing interaction PR/testing](https://github.com/R4vitejas/temporal-contract-floor3/issues/6), [#7 lifecycle](https://github.com/R4vitejas/temporal-contract-floor3/issues/7) | Use existing branch and independent test menu/player. Open a PR after incorporating main; do not rebuild completed prefabs | Production role provider and death/reset coordinator |
-| Sanjana (@sanjanaaravamudhan) | [#8 board](https://github.com/R4vitejas/temporal-contract-floor3/issues/8), [#9 UI](https://github.com/R4vitejas/temporal-contract-floor3/issues/9), [#10 feedback](https://github.com/R4vitejas/temporal-contract-floor3/issues/10), [#11 video](https://github.com/R4vitejas/temporal-contract-floor3/issues/11) | Start board with placeholder image and mock input actor; UI/feedback use mock data/events. Prepare recording setup early | Production input/state adapters and accurate floor artwork; final video needs frozen build |
-| Ravitejas (@R4vitejas) | [#12 floor assets](https://github.com/R4vitejas/temporal-contract-floor3/issues/12), [#13 main scene](https://github.com/R4vitejas/temporal-contract-floor3/issues/13), [#14 release/viva](https://github.com/R4vitejas/temporal-contract-floor3/issues/14) | Authorized and in progress: floor PR #18; independent Main/release preparation on feature/floor-integration | Final assembly needs reviewed subsystem PRs; release needs real laptops and integrated scene |
+| Adhithya (@RealAdhi), interactions | #6 interactions and #7 lifecycle — accepted and closed | PR #16 merged; independent release-safety retests pass | Verify production player/round/floor bindings under #13 |
+| Sanjana (@sanjanaaravamudhan) and Adhithya (@RealAdhi), presentation | [#8 board](https://github.com/R4vitejas/temporal-contract-floor3/issues/8), [#9 UI](https://github.com/R4vitejas/temporal-contract-floor3/issues/9), [#10 feedback](https://github.com/R4vitejas/temporal-contract-floor3/issues/10), [#11 video](https://github.com/R4vitejas/temporal-contract-floor3/issues/11) | Start board with placeholder image and mock input actor; UI/feedback use mock data/events. Prepare recording setup early | Production input/state adapters and accurate floor artwork; final video needs frozen build |
+| Ravitejas (@R4vitejas) | [#12 floor assets](https://github.com/R4vitejas/temporal-contract-floor3/issues/12), [#13 main scene](https://github.com/R4vitejas/temporal-contract-floor3/issues/13), [#14 release/viva](https://github.com/R4vitejas/temporal-contract-floor3/issues/14) | Full-floor draft PR #19; seminar repair and collision verified; Main/release preparation on feature/floor-integration | Final assembly needs reviewed subsystem PRs; release needs real laptops and integrated scene |
 
-All teammates have repository access and issues are formally assigned. Sanjana does not need another person's finished gameplay to build her test scenes.
+All teammates have repository access. Adhithya can develop presentation against mocks and the shared contracts while production integration continues.
 
 ## Parallel work rules
 

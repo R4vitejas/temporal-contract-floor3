@@ -1,5 +1,7 @@
 # Interaction review — November 18, 2026
 
+> Resolved on November 19 at `bf41861`: the original occupied-baseline regression and all 18 emitted cover-regression checks now pass independently. PR #16 was already merged by Adhithya; follow-up review accepts the repair and closes subsystem issues #6/#7. See [current review record](REVIEW_2026-11-19.md). The November 18 findings below remain as history.
+
 Reviewed PR #16 at `22c8b32745993249038e88ee8d798b1c38b28ea2`.
 
 The update adds reachability/overlap validation to normal forced drops, searches around an occupied baseline, and itemises the previously missing door-close safety, requester-only denial, positional feedback identity and disconnect evidence. Those two-client observations are Adhithya-reported; the complete matrix has not been independently rerun here.

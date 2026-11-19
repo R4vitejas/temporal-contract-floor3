@@ -26,7 +26,7 @@ Before adding large runtime assets, install Git LFS on every machine, commit the
 - Only Ravitejas edits `Game/Assets/Project/Scenes/Main.unity`.
 - Samatma owns package manifests, shared Core/Networking code, and player/combat/round systems.
 - Adhithya owns Interactions scripts/prefabs and his test scene.
-- Sanjana owns UI/Feedback scripts/prefabs and her test scene.
+- Sanjana and Adhithya co-own UI/Feedback scripts/prefabs and presentation test scenes (issues #8–#11, reassigned additionally on November 19 because Sanjana cannot run Unity on her laptop). Coordinate their existing branches before editing the same assets.
 - Ravitejas owns Environment assets, the main scene, and integration.
 - Ask the owner before changing their files. Do not resolve scene conflicts by discarding someone else's work.
 
