@@ -10,6 +10,12 @@ namespace TemporalContract.Environment.EditorTools
 {
     public static class FloorReleaseBuilder
     {
+        [MenuItem("Temporal Contract/Floor/Build Linux Offline Showcase")]
+        public static void BuildShowcaseLinux()
+        {
+            if(!File.Exists(FullFloorAssemblyBuilder.ShowcasePath))throw new InvalidOperationException("Build the offline showcase scene first.");
+            Build("showcase",FullFloorAssemblyBuilder.ShowcasePath,BuildOptions.Development);
+        }
         [MenuItem("Temporal Contract/Floor/Build Linux Environment Walkthrough")]
         public static void BuildEnvironmentLinux()
         {

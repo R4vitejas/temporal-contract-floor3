@@ -1,5 +1,15 @@
 # Project status
 
+## Final floor contribution — November 19
+
+The user has frozen the floor model for this presentation. PR #19 is merged; #18 was also marked merged through its shared ancestry. Further model/colour polish is deferred. See [Floor demo launch steps](FLOOR_DEMO.md).
+
+The independent offline showcase now combines the complete tested floor with the reviewed map: six classroom boards route E locally, M opens the map anywhere, all 11 regions select, Escape releases capture and movement resumes. Standalone checks pass all 48 entrances and the collision audit (7,646 wall rays, 251 approaches/returns, 158 slides, 4,986 clear grid edges; zero failures).
+
+Main now has the reviewed opt-in session, presentation root, 24 source doors, card/panel/light/cover, six boards, explicit scene pose references, HUD router/interaction-feedback wiring, unique saved scene network IDs and independent prefab registration. Host-only smoke passes spawning and actual-player board capture/release. All 1,767 source meshes/materials, Main source bounds and the original static collision bake are preserved. No mock provider or test controller is included in Main.
+
+Remaining production dependencies: Samatma #26/#27, Adhithya's real HUD state/actions adapter #9, and the explicitly excluded two-client/two-laptop acceptance. Main and full-game release remain gated; the standalone environment demo can be presented independently. Earlier statements below about Main not yet being placed or the floor PR remaining open are superseded.
+
 ## Current update — November 19
 
 - PR #16 was merged by Adhithya at `bf41861`. Independent Unity 6000.6.8f1 retests now pass the original occupied-baseline/all-rings-blocked scenario and all 18 emitted cover-regression checks. The cover clears ownership and parks hidden/non-solid when no valid drop exists. The original review finding is resolved; interaction subsystem issues #6/#7 are accepted and closed. Author-reported host/client observations remain distinguished from these independent host-side checks. Full production integration is still pending.
