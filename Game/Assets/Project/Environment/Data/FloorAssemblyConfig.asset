@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: FloorAssemblyConfig
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Environment.FloorAssemblyConfig
   subsystemReviewsAccepted: 0
+  productionCapsuleFitVerified: 0
   networkCommit:
   interactionCommit:
   presentationCommit:
-  presentationPrefab: {fileID: 0}
+  presentationPrefab: {fileID: 2111254978643043724, guid: 5a9ebad07e6d3dd789fd302345c620c9, type: 3}
   presentationBindingsVerified: 0

@@ -4,7 +4,7 @@
 
 Read README.md, CONTRIBUTING.md, docs/PROJECT_BRIEF.md, and docs/STATUS.md. Before implementation, wait for the bootstrap merge and read docs/INTEGRATION.md. Use the established interaction/reset/feedback contracts. Do not create a new Unity project, networking stack, player controller, or interaction framework.
 
-Work on feature/environment-interactions. Own Game/Assets/Project/Interactions and its prefabs, plus your own interaction test scene. Do not edit Main.unity, shared Core/Networking, package configuration, or production player/round systems. As additionally assigned on November 19, you may also implement UI/Feedback issues #8–#11 alongside Sanjana; follow docs/tasks/SANJANA.md and the issue-specific branches/contracts. Reuse existing work and coordinate asset edits. Interactions #6/#7 are accepted; PR #20 review and remaining presentation work are current priorities.
+Work on feature/environment-interactions. Own Game/Assets/Project/Interactions and its prefabs, plus your own interaction test scene. Do not edit Main.unity, shared Core/Networking, package configuration, or production player/round systems. As additionally assigned on November 19, you may also implement UI/Feedback issues #8–#11 alongside Sanjana; follow docs/tasks/SANJANA.md and the issue-specific branches/contracts. Reuse existing work and coordinate asset edits. Interactions #6/#7 are accepted; presentation PRs #20–#23 are merged; the real HUD/session/feedback adapter and combined two-client input/audio checks are current priorities.
 
 ## Deliver in this order
 

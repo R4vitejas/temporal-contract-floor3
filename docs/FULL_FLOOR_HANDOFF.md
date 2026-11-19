@@ -16,7 +16,7 @@ Collision is baked from geometry, including walls stored under `Wall`/`Cube` nam
 - His current player spawns and VIP position are hardcoded to the prototype coordinates. The new markers in Main are proposals. The round/session owner needs to expose or agree scene-driven positions and use the same positions at reset/role swap.
 - Adhithya's ordinary/restricted doors must replace each source door slab/handle visual with source pivots, door clearance volumes and collision. Inspection doors are held open only for walking tests. They do not implement E, lock state or network state.
 - The source staff cabin near the HOD room is the proposed VIP room. Bind its restricted door, nearby access panel, single keycard and designated source chair only after the gameplay locations are accepted and capsule fit is verified.
-- Sanjana can use `Environment/Data/FullFloorMap.png` and `full-floor-map-regions.json`. Her published board/HUD/feedback prefab and binder are still required; no production presentation PR was available at the latest check.
+- Presentation source/preparation PRs #20–#23 are merged. Adhithya co-owns #8–#11 with Sanjana. The board uses the full-floor map and all 11 normalized regions. The real HUD/session/combat adapter and combined two-client checks remain pending.
 - Final acceptance requires the real player, all shared interactions, combat/round/reset/rematch/disconnect, one local listener/camera, and full-game performance. Two laptops on the hotspot are the last acceptance step at the next team meeting.
 
 The independent collision/performance reports describe environment-only coverage. They do not certify multiplayer or every possible continuous player position.
@@ -24,3 +24,12 @@ The independent collision/performance reports describe environment-only coverage
 ## Checked candidate locations (Unity coordinates)
 
 The attacker candidate is `(11.02, 0.1, -7)`, defender `(-46.15, 0.1, -16.77)`, and VIP staff-cabin candidate `(-49.98, 0.1, -14.5)`. All three have floor support and no overlap for the independent 1.8 m/radius 0.3 m capsule. Main preparation asserts these checks and refuses an overlapping or unsupported marker. The defender marker was moved out of a source wall. These are candidate coordinates for the owner's round/session API, not changes to hardcoded production spawns.
+
+
+## Prepared presentation root — November 19
+
+`Environment/Prefabs/Floor3Presentation.prefab` composes the reviewed `FeedbackSystem`, `FloorMapPanel` and `HudSessionUi` prefabs with one EventSystem/InputSystemUIInputModule. Its board capture component is wired to `PlayerInputCaptureAdapter`. It has no mock provider, NetworkManager or AudioListener; the production local player supplies the listener. The real HUD provider/actions and gameplay/router/feedback bindings are still required from the presentation owner.
+
+Regenerate through **Temporal Contract → Floor → Prepare Full Floor Presentation Prefab** (`FullFloorPresentationBuilder.Build`). The builder uses a temporary additive scene and restores the user's active scene. It records the root in `FloorAssemblyConfig.presentationPrefab` and leaves `presentationBindingsVerified` false. It does not assemble Main or certify production input capture. Do not add a second EventSystem if this root is used.
+
+Live composition inspection found one feedback presenter, one map, one HUD, one EventSystem, zero AudioListeners, zero test/mock components and 11 map regions. The inspection scene remains clean with all 1,767 meshes; floor collision and Main are unchanged. Main stays disabled in production builds. Perform combined two-client input/audio and gameplay checks before freezing; record the video from the frozen verified build afterward.

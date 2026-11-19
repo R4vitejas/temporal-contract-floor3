@@ -4,7 +4,7 @@
 
 ## November 19 update
 
-Adhithya (@RealAdhi) is additionally assigned to #8–#11 because Sanjana's laptop cannot run Unity; she remains assigned. He may implement and test UI/Feedback under the existing presentation contracts. Interactions #6/#7 are accepted and closed after the repaired fallback passed independent retests. Feedback PR #20 is approved after its recoil fix. Board #21 needs a deterministic Escape regression; HUD #22 needs runtime binding preservation across disable/enable. Video-plan #23 is approved as preparation. Issues #8–#11 remain open for the remaining validation and capture. Full-floor/integration draft #19 supersedes cropped prototype #18. See [current status](STATUS.md).
+Adhithya (@RealAdhi) is additionally assigned to #8–#11 because Sanjana's laptop cannot run Unity; she remains assigned. He may implement and test UI/Feedback under the existing presentation contracts. Interactions #6/#7 are accepted and closed after the repaired fallback passed independent retests. Presentation PRs #20–#23 are merged after the fixes pass Linux re-review (board 19/19, HUD 35/35). A combined floor presentation prefab is prepared; real provider/actions binding and two-client acceptance remain pending. Issues #8–#11 remain open for the remaining validation and capture. Full-floor/integration draft #19 supersedes cropped prototype #18. See [current status](STATUS.md).
 
 ## Ready foundation
 
