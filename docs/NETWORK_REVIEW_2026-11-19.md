@@ -1,0 +1,24 @@
+# Networking and rounds review — November 19, 2026
+
+Reviewed landed main `12ecab2d15bc7330efb4c6c6bd3fa597cad6c0e2`. Adhithya had already merged #1/#17, the combat follow-up #25 and lifecycle-contract test #24 before this check. No additional merge or owner source edit was performed here.
+
+The original opt-in startup/F1 changes are present. An independent isolated Unity 6000.6.8f1 Linux host run with the committed NetworkCoreTest scene/player confirms no automatic listening before StartHost, successful host/player/coordinator spawn, one local camera and one listener. The updated lifecycle/reflection runner passes all 24 checks, exit 0. These results do not certify the complete two-client matrix.
+
+## Reproduced remaining blockers
+
+- [#26 — production actor eligibility](https://github.com/R4vitejas/temporal-contract-floor3/issues/26), assigned to Samatma. The coordinator binds roles but never binds `InteractionLifecycle.BindActorEligibility`. An isolated host regression establishes active/dead and between-round states using the real player, real health damage method and actual server interaction validator. The ordinary door accepts both a dead defender's request and a RoundResult request. The hook is null. Binding the existing hook as a control denies both states and preserves healthy active interaction. Test exit 2 records the expected reproduced defect.
+- [#27 — capsule and scene-pose integration](https://github.com/R4vitejas/temporal-contract-floor3/issues/27), assigned to Samatma. The real spawned player is height 2/radius 0.5/skin 0.08/center Y 1/step 0.3. At Door.007 / Classroom 02, both geometry-proxy endpoints are clear for the tested shape. The inspection capsule crosses with 0.00149 m target error; production dimensions stop with 1.17289 m error. The proxy uses inspection movement and is not a full production traversal test. Initial session approval, role-reset placement and auto-spawned VIP still use prototype positions. The full-floor assembler needs an agreed shape/movement decision and scene-driven pose bindings from the owner.
+
+[Follow-up review on #25](https://github.com/R4vitejas/temporal-contract-floor3/pull/25#pullrequestreview-5977223344) records the distinction between resolved original findings and these remaining integration defects. Issues #3/#4/#5 and #13/#14 stay open for their actual acceptance work. The full-floor geometry, collision and Main were not changed by this review; the live inspection scene was returned to Edit Mode.
+
+## Reproduce actor eligibility in an isolated checkout
+
+The review-only helper is [ReviewProductionEligibility.cs](review-harnesses/ReviewProductionEligibility.cs). Copy it into an Editor folder in a separate checkout of the source being tested, such as `Game/Assets/Project/Environment/Editor/`. Do not copy it into a shipped scene or run a batch Editor against an already-open project.
+
+Run Unity 6000.6.8f1 with `-batchmode -nographics -projectPath Game -executeMethod ReviewProductionEligibility.Begin -logFile eligibility.log`. Optional environment variables `REVIEW_SOURCE_SHA` and `PRODUCTION_ELIGIBILITY_REVIEW_OUTPUT` record the exact tested SHA and choose the report path; otherwise the report is written to the system temporary directory as `temporal-contract-production-eligibility.json`. The helper starts a local host on port 47966, establishes a host-only match fixture and invokes the actual coordinator BeginRound/EndRound methods, uses the committed production player and ordinary-door prefab, then shuts down. Exit 2 records unauthorized requests, rejected valid play or an invalid defender-death transition; 0 requires the expected production behavior and control checks; 3 indicates a harness/setup/control failure.
+
+The portable helper was rerun on the same main SHA and reproduces the defect (exit 2), with a real role-provider binding present after BeginRound but actor eligibility still unbound. Healthy production interaction succeeds and defender death keeps the round active; the two unauthorized cases still succeed. It does not simulate a second client or a complete match. Its role/match fixture is established by the harness; coordinator transitions, damage and server validation use product methods. Portable output and control checks are included.
+
+Recorded observations: [NETWORK_REVIEW_EVIDENCE_2026-11-19.json](NETWORK_REVIEW_EVIDENCE_2026-11-19.json). Local full logs are `.local-work/production-eligibility-12ecab2.log`, `lifecycle-contract-12ecab2.log` and the doorway proxy JSON. The original local helper also remains untracked in the isolated review checkout.
+
+Main assembly and the real HUD adapter can use the published interfaces, but gameplay acceptance and the two-client input/audio checks must pass before freezing. Final video uses that frozen verified build.

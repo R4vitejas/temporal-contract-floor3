@@ -1,5 +1,7 @@
 # Sanjana — classroom board, HUD, feedback, and video
 
+> November 19: Adhithya (@RealAdhi) is coassigned to #8–#11 because Sanjana's laptop cannot run Unity. Sanjana remains assigned. Adhithya may implement and run the presentation scenes using this brief and the existing issue branches. Coordinate before editing the same assets; Main and production networking/player/round ownership remain unchanged.
+
 ## Give this brief to your AI
 
 Read README.md, CONTRIBUTING.md, docs/PROJECT_BRIEF.md, and docs/STATUS.md. Before implementation, wait for the bootstrap merge and read docs/INTEGRATION.md. Use the shared interfaces/events. Do not create another Unity project, player controller, interaction router, networking stack, or authoritative match state.

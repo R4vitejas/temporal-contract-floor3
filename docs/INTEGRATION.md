@@ -8,7 +8,7 @@ This is the bootstrap contract set for Unity `6000.6.8f1`. The project uses Netc
 
 - Shared interfaces and data types: `TemporalContract.Core` under `Assets/Project/Core/Contracts/`.
 - Local camera interaction router: `TemporalContract.Networking.InteractionRouter` under `Assets/Project/Networking/`.
-- Samatma owns `Core`, `Networking`, `Players`, `Combat`, and `Rounds`. Adhithya owns `Interactions` and his test scene. Sanjana owns `UI`, `Feedback`, and her test scene. Ravitejas owns `Environment` and `Assets/Project/Scenes/Main.unity`.
+- Samatma owns `Core`, `Networking`, `Players`, `Combat`, and `Rounds`. Adhithya owns `Interactions` and his test scene. Sanjana and Adhithya co-own `UI`, `Feedback`, and presentation test scenes for #8–#11 (November 19 reassignment). Ravitejas owns `Environment` and `Assets/Project/Scenes/Main.unity`.
 - Do not edit the main integration scene; it is owned by Ravitejas.
 
 ## Interaction contracts

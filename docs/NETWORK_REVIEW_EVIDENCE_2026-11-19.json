@@ -1,0 +1,82 @@
+{
+  "landedMainCommit": "12ecab2d15bc7330efb4c6c6bd3fa597cad6c0e2",
+  "environmentCommit": "72674b514ce980e5ef76b5dc79ef23bf64988f31",
+  "hostEligibility": {
+    "reviewedCommit": "12ecab2",
+    "scope": "Isolated host: committed NetworkCoreTest scene/player, real health and server interaction validation; round phase set by test harness",
+    "optInStartup": true,
+    "host": true,
+    "playerSpawned": true,
+    "productionEligibilityBound": false,
+    "deadActorAlive": false,
+    "deadInteractionAccepted": true,
+    "betweenRoundGameplayActive": false,
+    "betweenRoundInteractionAccepted": true,
+    "guardedHealthyAccepted": true,
+    "guardedDeadDenied": true,
+    "guardedBetweenRoundDenied": true,
+    "localCameras": 1,
+    "localListeners": 1,
+    "capsuleHeight": 2.0,
+    "capsuleRadius": 0.5,
+    "stepOffset": 0.30000001192092896,
+    "centerY": 1.0
+  },
+  "doorGeometryProxy": {
+    "door": "Door.007 / Classroom 02",
+    "scope": "Geometry proxy using inspection movement; dimensions from committed production player",
+    "results": [
+      {
+        "height": 1.8,
+        "radius": 0.3,
+        "skin": 0.03,
+        "endpointsClear": true,
+        "endpointDistance": 0.7,
+        "error": 0.00148582458,
+        "passed": true
+      },
+      {
+        "height": 2,
+        "radius": 0.5,
+        "skin": 0.08,
+        "endpointsClear": true,
+        "endpointDistance": 0.7,
+        "error": 1.17289352,
+        "passed": false
+      }
+    ]
+  },
+  "lifecycleReflectionRegression": {
+    "passed": 24,
+    "total": 24,
+    "exitCode": 0
+  },
+  "limitations": [
+    "Host-side regression with round phase established by the harness; not a two-client match run.",
+    "Door test uses inspection movement with production capsule dimensions; not the full production controller/network traversal matrix."
+  ],
+  "portableCoordinatorFixture": {
+    "reviewedCommit": "12ecab2d15bc7330efb4c6c6bd3fa597cad6c0e2",
+    "scope": "Isolated host: committed NetworkCoreTest scene/player, real health and server interaction validation; host-only match fixture invokes the real BeginRound/EndRound methods",
+    "optInStartup": true,
+    "host": true,
+    "playerSpawned": true,
+    "productionEligibilityBound": false,
+    "productionRoleProviderBound": true,
+    "productionHealthyInteractionAccepted": true,
+    "defenderDeathKeepsRoundActive": true,
+    "deadActorAlive": false,
+    "deadInteractionAccepted": true,
+    "betweenRoundGameplayActive": false,
+    "betweenRoundInteractionAccepted": true,
+    "guardedHealthyAccepted": true,
+    "guardedDeadDenied": true,
+    "guardedBetweenRoundDenied": true,
+    "localCameras": 1,
+    "localListeners": 1,
+    "capsuleHeight": 2.0,
+    "capsuleRadius": 0.5,
+    "stepOffset": 0.30000001192092896,
+    "centerY": 1.0
+  }
+}

@@ -1,0 +1,673 @@
+{
+  "source": "3rdfloor-compressed.blend",
+  "sourceUnits": "metres",
+  "sourceOrigin": [
+    38.97999954223633,
+    -1.0,
+    0.0
+  ],
+  "roomCollections": [
+    "ClassRoom02",
+    "ClassRoom03",
+    "ClassRoom05",
+    "ClassRoom06"
+  ],
+  "doors": [
+    {
+      "room": "ClassRoom02",
+      "source": "Door.007",
+      "sourceHinge": [
+        34.81372833251953,
+        -14.825091361999512,
+        0.00400090217590332
+      ],
+      "sourceSize": [
+        0.9341468811035156,
+        0.034000396728515625,
+        2.009999990463257
+      ]
+    },
+    {
+      "room": "ClassRoom03",
+      "source": "Door.008",
+      "sourceHinge": [
+        50.763614654541016,
+        -14.824715614318848,
+        0.003999948501586914
+      ],
+      "sourceSize": [
+        0.9341468811035156,
+        0.034000396728515625,
+        2.009999990463257
+      ]
+    },
+    {
+      "room": "ClassRoom06",
+      "source": "Door.009",
+      "sourceHinge": [
+        34.929927825927734,
+        0.19911277294158936,
+        0.003999948501586914
+      ],
+      "sourceSize": [
+        0.9341468811035156,
+        0.03400029242038727,
+        2.009999990463257
+      ]
+    },
+    {
+      "room": "ClassRoom05",
+      "source": "Door.010",
+      "sourceHinge": [
+        50.74504089355469,
+        0.17556515336036682,
+        0.003999471664428711
+      ],
+      "sourceSize": [
+        0.9341468811035156,
+        0.03399999439716339,
+        2.009999990463257
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "source": "Cube.003",
+      "runtime": "Source_Cube.003",
+      "triangles": 308
+    },
+    {
+      "source": "Cube.004",
+      "runtime": "Source_Cube.004",
+      "triangles": 308
+    },
+    {
+      "source": "Cube.006",
+      "runtime": "Source_Cube.006",
+      "triangles": 308
+    },
+    {
+      "source": "Cube.007",
+      "runtime": "Source_Cube.007",
+      "triangles": 308
+    },
+    {
+      "source": "Cylinder.052",
+      "runtime": "Source_Cylinder.052",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.053",
+      "runtime": "Source_Cylinder.053",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.054",
+      "runtime": "Source_Cylinder.054",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.055",
+      "runtime": "Source_Cylinder.055",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.068",
+      "runtime": "Source_Cylinder.068",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.069",
+      "runtime": "Source_Cylinder.069",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.070",
+      "runtime": "Source_Cylinder.070",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.071",
+      "runtime": "Source_Cylinder.071",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.078",
+      "runtime": "Source_Cylinder.078",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.079",
+      "runtime": "Source_Cylinder.079",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.080",
+      "runtime": "Source_Cylinder.080",
+      "triangles": 992
+    },
+    {
+      "source": "Cylinder.081",
+      "runtime": "Source_Cylinder.081",
+      "triangles": 992
+    },
+    {
+      "source": "Longer.005",
+      "runtime": "Source_Longer.005",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.006",
+      "runtime": "Source_Longer.006",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.007",
+      "runtime": "Source_Longer.007",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.008",
+      "runtime": "Source_Longer.008",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.011",
+      "runtime": "Source_Longer.011",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.012",
+      "runtime": "Source_Longer.012",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.013",
+      "runtime": "Source_Longer.013",
+      "triangles": 860
+    },
+    {
+      "source": "Longer.014",
+      "runtime": "Source_Longer.014",
+      "triangles": 860
+    },
+    {
+      "source": "Plane.024",
+      "runtime": "Source_Plane.024",
+      "triangles": 346
+    },
+    {
+      "source": "Plane.025",
+      "runtime": "Source_Plane.025",
+      "triangles": 346
+    },
+    {
+      "source": "Plane.035",
+      "runtime": "Source_Plane.035",
+      "triangles": 322
+    },
+    {
+      "source": "Plane.036",
+      "runtime": "Source_Plane.036",
+      "triangles": 322
+    },
+    {
+      "source": "Plane.043",
+      "runtime": "Source_Plane.043",
+      "triangles": 546
+    },
+    {
+      "source": "Plane.044",
+      "runtime": "Source_Plane.044",
+      "triangles": 546
+    },
+    {
+      "source": "Plane.045",
+      "runtime": "Source_Plane.045",
+      "triangles": 546
+    },
+    {
+      "source": "Plane.046",
+      "runtime": "Source_Plane.046",
+      "triangles": 546
+    },
+    {
+      "source": "Plane.052",
+      "runtime": "Source_Plane.052",
+      "triangles": 16
+    },
+    {
+      "source": "Plane.053",
+      "runtime": "Source_Plane.053",
+      "triangles": 16
+    },
+    {
+      "source": "Plane.055",
+      "runtime": "Source_Plane.055",
+      "triangles": 16
+    },
+    {
+      "source": "Plane.056",
+      "runtime": "Source_Plane.056",
+      "triangles": 16
+    },
+    {
+      "source": "Roof.001",
+      "runtime": "Source_Roof.001",
+      "triangles": 270
+    },
+    {
+      "source": "Roof.002",
+      "runtime": "Source_Roof.002",
+      "triangles": 270
+    },
+    {
+      "source": "Roof.003",
+      "runtime": "Source_Roof.003",
+      "triangles": 270
+    },
+    {
+      "source": "Roof.004",
+      "runtime": "Source_Roof.004",
+      "triangles": 270
+    },
+    {
+      "source": "Shorter.011",
+      "runtime": "Source_Shorter.011",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.012",
+      "runtime": "Source_Shorter.012",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.013",
+      "runtime": "Source_Shorter.013",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.014",
+      "runtime": "Source_Shorter.014",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.015",
+      "runtime": "Source_Shorter.015",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.016",
+      "runtime": "Source_Shorter.016",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.017",
+      "runtime": "Source_Shorter.017",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.018",
+      "runtime": "Source_Shorter.018",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.023",
+      "runtime": "Source_Shorter.023",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.024",
+      "runtime": "Source_Shorter.024",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.025",
+      "runtime": "Source_Shorter.025",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.026",
+      "runtime": "Source_Shorter.026",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.027",
+      "runtime": "Source_Shorter.027",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.028",
+      "runtime": "Source_Shorter.028",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.029",
+      "runtime": "Source_Shorter.029",
+      "triangles": 860
+    },
+    {
+      "source": "Shorter.030",
+      "runtime": "Source_Shorter.030",
+      "triangles": 860
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.017",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.017",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.018",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.018",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.019",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.019",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.020",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.020",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.033",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.033",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.034",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.034",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.035",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.035",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.036",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.036",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.043",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.043",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.044",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.044",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.045",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.045",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_1_glass.046",
+      "runtime": "Source_sweethome3d_opening_on_rail_1_glass.046",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.017",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.017",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.018",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.018",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.019",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.019",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.020",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.020",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.033",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.033",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.034",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.034",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.035",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.035",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.036",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.036",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.043",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.043",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.044",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.044",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.045",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.045",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_opening_on_rail_2_frame.046",
+      "runtime": "Source_sweethome3d_opening_on_rail_2_frame.046",
+      "triangles": 176
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.017",
+      "runtime": "Source_sweethome3d_unique_rail_cage.017",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.018",
+      "runtime": "Source_sweethome3d_unique_rail_cage.018",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.019",
+      "runtime": "Source_sweethome3d_unique_rail_cage.019",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.020",
+      "runtime": "Source_sweethome3d_unique_rail_cage.020",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.033",
+      "runtime": "Source_sweethome3d_unique_rail_cage.033",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.034",
+      "runtime": "Source_sweethome3d_unique_rail_cage.034",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.035",
+      "runtime": "Source_sweethome3d_unique_rail_cage.035",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.036",
+      "runtime": "Source_sweethome3d_unique_rail_cage.036",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.043",
+      "runtime": "Source_sweethome3d_unique_rail_cage.043",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.044",
+      "runtime": "Source_sweethome3d_unique_rail_cage.044",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.045",
+      "runtime": "Source_sweethome3d_unique_rail_cage.045",
+      "triangles": 4
+    },
+    {
+      "source": "sweethome3d_unique_rail_cage.046",
+      "runtime": "Source_sweethome3d_unique_rail_cage.046",
+      "triangles": 4
+    },
+    {
+      "source": "window.017",
+      "runtime": "Source_window.017",
+      "triangles": 128
+    },
+    {
+      "source": "window.018",
+      "runtime": "Source_window.018",
+      "triangles": 128
+    },
+    {
+      "source": "window.019",
+      "runtime": "Source_window.019",
+      "triangles": 128
+    },
+    {
+      "source": "window.020",
+      "runtime": "Source_window.020",
+      "triangles": 128
+    },
+    {
+      "source": "window.033",
+      "runtime": "Source_window.033",
+      "triangles": 128
+    },
+    {
+      "source": "window.034",
+      "runtime": "Source_window.034",
+      "triangles": 128
+    },
+    {
+      "source": "window.035",
+      "runtime": "Source_window.035",
+      "triangles": 128
+    },
+    {
+      "source": "window.036",
+      "runtime": "Source_window.036",
+      "triangles": 128
+    },
+    {
+      "source": "window.043",
+      "runtime": "Source_window.043",
+      "triangles": 128
+    },
+    {
+      "source": "window.044",
+      "runtime": "Source_window.044",
+      "triangles": 128
+    },
+    {
+      "source": "window.045",
+      "runtime": "Source_window.045",
+      "triangles": 128
+    },
+    {
+      "source": "window.046",
+      "runtime": "Source_window.046",
+      "triangles": 128
+    },
+    {
+      "source": "Pathway",
+      "runtime": "SourceCorridor",
+      "triangles": 600
+    },
+    {
+      "source": "Door.007",
+      "runtime": "SourceDoorSlab",
+      "triangles": 64
+    },
+    {
+      "source": "Handle_Front.007",
+      "runtime": "SourceHandle",
+      "triangles": 264
+    },
+    {
+      "source": "Handle_Back.007",
+      "runtime": "SourceHandle.001",
+      "triangles": 264
+    },
+    {
+      "source": "Door.008",
+      "runtime": "SourceDoorSlab.001",
+      "triangles": 64
+    },
+    {
+      "source": "Handle_Front.008",
+      "runtime": "SourceHandle.002",
+      "triangles": 264
+    },
+    {
+      "source": "Handle_Back.008",
+      "runtime": "SourceHandle.003",
+      "triangles": 264
+    },
+    {
+      "source": "Door.009",
+      "runtime": "SourceDoorSlab.002",
+      "triangles": 64
+    },
+    {
+      "source": "Handle_Front.009",
+      "runtime": "SourceHandle.004",
+      "triangles": 264
+    },
+    {
+      "source": "Handle_Back.009",
+      "runtime": "SourceHandle.005",
+      "triangles": 264
+    },
+    {
+      "source": "Door.010",
+      "runtime": "SourceDoorSlab.003",
+      "triangles": 64
+    },
+    {
+      "source": "Handle_Front.010",
+      "runtime": "SourceHandle.006",
+      "triangles": 264
+    },
+    {
+      "source": "Handle_Back.010",
+      "runtime": "SourceHandle.007",
+      "triangles": 264
+    },
+    {
+      "source": "Cube.386",
+      "runtime": "SourceChair",
+      "triangles": 380
+    }
+  ],
+  "sourceChair": "Cube.386",
+  "sourceTriangleCount": 10958379,
+  "notes": [
+    "Original files remain unchanged.",
+    "Lab OBJ: 576510843 bytes, 3016929 vertices, 4766537 faces; excluded.",
+    "Missing source image paths replaced by eight named material colors.",
+    "Pathway clipped to selected corridor; room shell, board, windows and benches retained."
+  ]
+}
