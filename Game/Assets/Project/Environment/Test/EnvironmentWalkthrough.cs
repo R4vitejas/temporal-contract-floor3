@@ -27,7 +27,7 @@ namespace TemporalContract.Environment.Testing
             body.minMoveDistance=0f;
             body.enableOverlapRecovery=true;
             var args=System.Environment.GetCommandLineArgs();
-            automated=Array.IndexOf(args,"--floor-smoke-test")>=0||Array.IndexOf(args,"--floor-production-capsule-test")>=0||Array.IndexOf(args,"--full-floor-smoke-test")>=0||Array.IndexOf(args,"--full-floor-collision-audit")>=0||Array.IndexOf(args,"--full-floor-performance")>=0;
+            automated=Array.IndexOf(args,"--floor-smoke-test")>=0||Array.IndexOf(args,"--floor-production-capsule-test")>=0||Array.IndexOf(args,"--full-floor-smoke-test")>=0||Array.IndexOf(args,"--full-floor-collision-audit")>=0||Array.IndexOf(args,"--full-floor-performance")>=0||Array.IndexOf(args,"--floor-showcase-test")>=0;
             Cursor.lockState = automated?CursorLockMode.None:CursorLockMode.Locked;
             Cursor.visible = automated;
         }
