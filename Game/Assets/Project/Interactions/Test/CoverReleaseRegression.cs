@@ -41,6 +41,7 @@ namespace TemporalContract.Interactions.Testing
                 yield return Scenario2ExhaustedFallbackParks();
                 yield return Scenario3ParkedCoverReappearsWhenSpaceReturns();
                 yield return Scenario4ResetClearsParkedState();
+                yield return Scenario5CoordinatorReflectionContract();
             }
 
             Finish();
@@ -121,6 +122,46 @@ namespace TemporalContract.Interactions.Testing
             Check("S4 reset unparked the cover", !cover.IsParked);
             Check("S4 reset restored exact baseline", cover.transform.position == Vector3.zero);
             Check("S4 colliders restored by reset", !AllCollidersDisabled());
+        }
+
+        // The round coordinator reaches the lifecycle only by reflection (it cannot reference this assembly's types
+        // directly). This repeats its exact lookups and calls so a rename or signature change fails here.
+        private IEnumerator Scenario5CoordinatorReflectionContract()
+        {
+            System.Type type = System.Type.GetType("TemporalContract.Interactions.InteractionLifecycle, Assembly-CSharp");
+            Check("S5 lifecycle type resolves by the coordinator's name", type != null);
+            if (type == null)
+            {
+                yield break;
+            }
+
+            MethodInfo bind = type.GetMethod("BindRoleProvider", BindingFlags.Public | BindingFlags.Static);
+            MethodInfo reset = type.GetMethod("ResetAll", BindingFlags.Public | BindingFlags.Static);
+            MethodInfo died = type.GetMethod("OnPlayerDied", BindingFlags.Public | BindingFlags.Static);
+            Check("S5 BindRoleProvider/ResetAll/OnPlayerDied found", bind != null && reset != null && died != null);
+            if (bind == null || reset == null || died == null)
+            {
+                yield break;
+            }
+
+            bind.Invoke(null, new object[] { (System.Func<ulong, bool>)(id => id == 0) });
+            Check("S5 role provider bound by reflection", InteractionRoleGate.IsBound && InteractionRoleGate.CanActAsAttacker(0)
+                && !InteractionRoleGate.CanActAsAttacker(1));
+            bind.Invoke(null, new object[] { null });
+            Check("S5 role provider unbound by reflection", !InteractionRoleGate.IsBound);
+
+            floor.SetActive(true);
+            Physics.SyncTransforms();
+            cover.transform.position = new Vector3(3f, 0f, 3f);
+            ForceHolder(0);
+            died.Invoke(null, new object[] { 0UL });
+            yield return new WaitForFixedUpdate();
+            Check("S5 OnPlayerDied via reflection released the cover", HolderValue() == ulong.MaxValue);
+
+            cover.transform.position = new Vector3(3f, 0f, 3f);
+            reset.Invoke(null, new object[] { new Core.RoundResetContext(3, 9) });
+            yield return new WaitForFixedUpdate();
+            Check("S5 ResetAll via reflection restored the baseline", cover.transform.position == Vector3.zero);
         }
 
         // ---- helpers ----
