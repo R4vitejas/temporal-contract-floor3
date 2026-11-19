@@ -6,6 +6,10 @@
 
 Adhithya (@RealAdhi) is additionally assigned to #8–#11 because Sanjana's laptop cannot run Unity; she remains assigned. He may implement and test UI/Feedback under the existing presentation contracts. Interactions #6/#7 are accepted and closed after the repaired fallback passed independent retests. Presentation PRs #20–#23 are merged after the fixes pass Linux re-review (board 19/19, HUD 35/35). A combined floor presentation prefab is prepared; real provider/actions binding and two-client acceptance remain pending. Issues #8–#11 remain open for the remaining validation and capture. Full-floor/integration draft #19 supersedes cropped prototype #18. See [current status](STATUS.md).
 
+## Networking/round review update
+
+Networking/combat source #1/#17/#25 and reflection test #24 are already on main. Original startup/F1 findings are resolved. Independent host-side review reproduced #26 (authoritative interaction eligibility) and the full-floor capsule/pose integration blocker #27; both are assigned to Samatma. #3–#5 remain open for actual host/client acceptance. See [network review](NETWORK_REVIEW_2026-11-19.md).
+
 ## Ready foundation
 
 Bootstrap PR #2 is merged on main. Use Unity 6000.6.8f1 and the pinned package lock. Read README, CONTRIBUTING, PROJECT_BRIEF and INTEGRATION before making changes. Do not recreate the project or upgrade packages individually.

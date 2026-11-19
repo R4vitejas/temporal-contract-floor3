@@ -1,5 +1,7 @@
 # Full-floor production handoff
 
+> November 19 network review: #1/#17/#25 are already merged to main, but #26 (authoritative alive/round interaction gate) and #27 (production capsule fit and scene-driven poses) remain assigned to Samatma. A new host-side test reproduces the eligibility issue; the production-size doorway proxy fails while the inspection capsule passes. See [review and reproduction](NETWORK_REVIEW_2026-11-19.md). Keep Main disabled until its real bindings and acceptance checks pass.
+
 The shared environment is `Environment/Prefabs/Floor3FullEnvironment.prefab`. Inspect it in `Environment/Scenes/FullFloorInspection.unity`. The full layout, source props and retro materials remain. Main contains the full environment and proposed gameplay markers; it is not an assembled match.
 
 ## Movement and collision
