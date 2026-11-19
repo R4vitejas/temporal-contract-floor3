@@ -134,10 +134,11 @@ namespace TemporalContract.Interactions
             foreach(var hit in hits)
             {
                 if(hit.collider.GetComponentInParent<NetworkObject>()==player)continue;
-                return hit.collider.transform.IsChildOf(transform);
+                return IsTargetCollider(hit.collider);
             }
             return true;
         }
+        protected virtual bool IsTargetCollider(Collider collider)=>collider.transform.IsChildOf(transform);
 
         /// <summary>Validate role/state and mutate replicated state. Called on the host after range checks pass.</summary>
         protected abstract bool ExecuteOnServer(in InteractionRequest request, NetworkObject player);

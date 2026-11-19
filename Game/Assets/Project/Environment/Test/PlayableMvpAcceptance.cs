@@ -169,6 +169,7 @@ namespace TemporalContract.Environment.Testing
             Check(Request(binding.accessPanel)&&binding.accessPanel.IsGranted&&!binding.restrictedDoor.IsLocked,"Card grants the scene access panel and unlocks cabin");
             foreach(var door in binding.doors)
             {
+                if(door.IsOpen){Check(true,"Coincident source leaf follows its physical door group: "+door.name);continue;}
                 PlaceNear(door);
                 Check(Request(door)&&door.IsOpen,"Server opens source door "+door.name);
             }

@@ -30,6 +30,8 @@ namespace TemporalContract.Interactions
         [Tooltip("Trigger volume covering the doorway when closed. Must not be a child of the hinge.")]
         [SerializeField] private BoxCollider doorwayClearance;
         [SerializeField] private LayerMask blockerLayers = ~0;
+        [Tooltip("Coincident source leaves belonging to this same physical opening. One request moves the group.")]
+        [SerializeField] private NetworkDoor[] linkedLeaves=System.Array.Empty<NetworkDoor>();
 
         private readonly NetworkVariable<bool> isOpen = new NetworkVariable<bool>(false);
         private readonly NetworkVariable<bool> isLocked = new NetworkVariable<bool>(false);
@@ -112,12 +114,15 @@ namespace TemporalContract.Interactions
             }
 
             bool opening = !isOpen.Value;
-            if (!opening && IsDoorwayOccupied())
+            bool occupied=IsDoorwayOccupied();
+            foreach(var leaf in linkedLeaves)if(leaf&&leaf.IsDoorwayOccupied())occupied=true;
+            if (!opening && occupied)
             {
                 return Deny("a player is standing in the doorway");
             }
 
             isOpen.Value = opening;
+            foreach(var leaf in linkedLeaves)if(leaf&&leaf.IsServer&&leaf.IsSpawned)leaf.isOpen.Value=opening;
             BroadcastFeedback(FeedbackKind.DoorMoved, opening ? 1f : 0f);
             return true;
         }
@@ -128,7 +133,14 @@ namespace TemporalContract.Interactions
             if (IsServer && IsSpawned)
             {
                 isLocked.Value = locked;
+                foreach(var leaf in linkedLeaves)if(leaf&&leaf.IsServer&&leaf.IsSpawned)leaf.isLocked.Value=locked;
             }
+        }
+        protected override bool IsTargetCollider(Collider collider)
+        {
+            if(base.IsTargetCollider(collider))return true;
+            foreach(var leaf in linkedLeaves)if(leaf&&collider.transform.IsChildOf(leaf.transform))return true;
+            return false;
         }
 
         protected override void ResetState()

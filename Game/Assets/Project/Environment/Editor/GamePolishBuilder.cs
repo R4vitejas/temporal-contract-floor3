@@ -2,6 +2,7 @@ using System.Linq;
 using TemporalContract.Feedback;
 using TemporalContract.Players;
 using TemporalContract.Combat;
+using TemporalContract.Interactions;
 using TemporalContract.UI.Hud;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -34,6 +35,7 @@ namespace TemporalContract.Environment.EditorTools
         {
             ConfigureActorAssets();
             binding=scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<FullFloorSceneBindings>(true)).Single();hud=binding.hud;
+            LinkCoincidentDoorLeaves();
             font=Get<Text>(hud,"roleText").font;
             var old=binding.transform.Find("Game presentation");if(old)Object.DestroyImmediate(old.gameObject);
             generated=new GameObject("Game presentation").transform;generated.SetParent(binding.transform,false);
@@ -90,6 +92,23 @@ namespace TemporalContract.Environment.EditorTools
             }
             // Main deliberately keeps a single explicit listener before a player exists.
             Debug.Log("GAME_PRESENTATION_PREPARED: menu listener/camera handoff, production session menu, preferences, HUD cards and reload progress.");
+        }
+        static void LinkCoincidentDoorLeaves()
+        {
+            var meshes=binding.doors.ToDictionary(d=>d,d=>d.GetComponentsInChildren<MeshRenderer>(true).First(r=>r.name.StartsWith("Source_Door.")));
+            foreach(var door in binding.doors)
+            {
+                var bounds=meshes[door].bounds;
+                var group=binding.doors.Where(other=>
+                {
+                    var b=meshes[other].bounds;
+                    return Vector2.Distance(new Vector2(bounds.center.x,bounds.center.z),new Vector2(b.center.x,b.center.z))<.15f
+                        && (bounds.size.x>bounds.size.z)==(b.size.x>b.size.z)&&Mathf.Abs(bounds.size.y-b.size.y)<.3f;
+                }).OrderByDescending(d=>meshes[d].bounds.size.y*Mathf.Max(meshes[d].bounds.size.x,meshes[d].bounds.size.z)).ThenBy(d=>d.name).ToArray();
+                var settings=new SerializedObject(door);var peers=settings.FindProperty("linkedLeaves");var linked=group.Where(d=>d!=door).ToArray();
+                peers.arraySize=linked.Length;for(int i=0;i<linked.Length;i++)peers.GetArrayElementAtIndex(i).objectReferenceValue=linked[i];settings.ApplyModifiedPropertiesWithoutUndo();
+                foreach(var collider in door.GetComponentsInChildren<Collider>(true).Where(c=>!c.isTrigger))collider.enabled=group[0]==door;
+            }
         }
         static void ConfigureActorAssets()
         {
