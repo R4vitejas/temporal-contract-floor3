@@ -52,6 +52,8 @@ namespace TemporalContract.Environment.Testing
         }
         private IEnumerator MeasurePerformance()
         {
+            // Editor/tool focus changes must not pause an automated standalone sample.
+            Application.runInBackground=true;
             QualitySettings.vSyncCount=0;Application.targetFrameRate=-1;
             var positions=new[]{new Vector3(-13,1.7f,-7),new Vector3(-14,3.2f,-3),new Vector3(-1,1.7f,-19),new Vector3(-35,1.7f,9)};
             var targets=new[]{new Vector3(10,1.6f,-6),new Vector3(-14,1.5f,7),new Vector3(-3,1.4f,-14),new Vector3(-28,1.5f,9)};
