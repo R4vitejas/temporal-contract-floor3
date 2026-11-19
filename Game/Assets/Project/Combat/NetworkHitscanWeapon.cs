@@ -39,6 +39,7 @@ namespace TemporalContract.Combat
             ? Math.Max(0d, reloadEndsAt.Value - NetworkManager.ServerTime.Time) : 0d;
         public event Action StateChanged;
         public event Action<NetworkHitscanWeapon> ShotFired;
+        public event Action<NetworkHitscanWeapon> HitConfirmed;
 
         public override void OnNetworkSpawn()
         {
@@ -78,12 +79,20 @@ namespace TemporalContract.Combat
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
-                FireRpc(player.CameraPitch);
+                RequestFire();
             }
             if (Keyboard.current.rKey.wasPressedThisFrame)
             {
-                RequestReloadRpc();
+                RequestReload();
             }
+        }
+        public void RequestFire()
+        {
+            if(IsOwner && player!=null && !player.IsGameplayInputCaptured)FireRpc(player.CameraPitch);
+        }
+        public void RequestReload()
+        {
+            if(IsOwner && player!=null && !player.IsGameplayInputCaptured)RequestReloadRpc();
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -119,7 +128,7 @@ namespace TemporalContract.Combat
             NetworkPlayerHealth targetPlayer = hit.collider.GetComponentInParent<NetworkPlayerHealth>();
             if (targetPlayer != null && targetPlayer.OwnerClientId != OwnerClientId)
             {
-                targetPlayer.ApplyDamage(damage, OwnerClientId);
+                if(targetPlayer.ApplyDamage(damage, OwnerClientId))ConfirmHitRpc();
                 return;
             }
 
@@ -128,7 +137,7 @@ namespace TemporalContract.Combat
                 ? RoundCoordinator.Instance.IsAttacker(OwnerClientId)
                 : LobbyNetworkState.Instance != null && LobbyNetworkState.Instance.IsAttacker(OwnerClientId)))
             {
-                targetVip.ApplyDamage(damage, OwnerClientId);
+                if(targetVip.ApplyDamage(damage, OwnerClientId))ConfirmHitRpc();
             }
         }
 
@@ -144,6 +153,8 @@ namespace TemporalContract.Combat
             reloading.Value = true;
             reloadEndsAt.Value = NetworkManager.ServerTime.Time + reloadDuration;
         }
+        [Rpc(SendTo.Owner)]
+        private void ConfirmHitRpc() => HitConfirmed?.Invoke(this);
 
         public void ResetForRound(in RoundResetContext context)
         {

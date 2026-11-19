@@ -38,10 +38,9 @@ namespace TemporalContract.Players
         public override void OnNetworkSpawn()
         {
             characterController = GetComponent<CharacterController>();
-            characterController.center = Vector3.up;
+            if (GameplaySceneLayout.Active) GameplaySceneLayout.Active.Configure(characterController);
             health = GetComponent<NetworkPlayerHealth>();
             alive = health != null && health.IsAlive;
-            characterController.enabled = alive;
             characterController.enabled = alive;
             if (playerCamera == null)
             {
@@ -133,11 +132,18 @@ namespace TemporalContract.Players
             {
                 verticalSpeed = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
             }
-            verticalSpeed += Physics.gravity.y * Time.deltaTime;
-
+            MoveHorizontal(move,Time.deltaTime);
+        }
+        private void MoveHorizontal(Vector2 move,float elapsed)
+        {
             Vector3 horizontal = transform.right * move.x + transform.forward * move.y;
-            Vector3 velocity = horizontal * moveSpeed + Vector3.up * verticalSpeed;
-            characterController.Move(velocity * Time.deltaTime);
+            if (GameplaySceneLayout.Active)
+                FloorCharacterMotor.Move(characterController, ref verticalSpeed, horizontal*moveSpeed, elapsed, Physics.gravity.y);
+            else
+            {
+                verticalSpeed += Physics.gravity.y * elapsed;
+                characterController.Move((horizontal * moveSpeed + Vector3.up * verticalSpeed)*elapsed);
+            }
         }
 
         /// <summary>Acquire or release a modal input lock. Use the owning UI component as the key.</summary>
@@ -202,15 +208,14 @@ namespace TemporalContract.Players
 
         private void ApplySpawnPosition(bool attacker)
         {
-            transform.SetPositionAndRotation(
-                attacker ? new Vector3(-2.5f, 0f, 0f) : new Vector3(2.5f, 0f, 0f),
-                attacker ? Quaternion.identity : Quaternion.Euler(0f, 180f, 0f));
+            bool enabled=characterController!=null&&characterController.enabled;
+            if(characterController!=null)characterController.enabled=false;
+            var pose=GameplaySceneLayout.PlayerPose(attacker);
+            transform.SetPositionAndRotation(pose.position,pose.rotation);
             verticalSpeed = 0f;
-            if (characterController != null)
-            {
-                characterController.enabled = false;
-                characterController.enabled = true;
-            }
+            pitch=0;
+            if(playerCamera)playerCamera.transform.localRotation=Quaternion.identity;
+            if(characterController!=null)characterController.enabled=enabled;
         }
 
         public void SetAliveState(bool isAlive)

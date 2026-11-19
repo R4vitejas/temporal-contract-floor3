@@ -6,6 +6,7 @@ using TemporalContract.Combat;
 using TemporalContract.Networking;
 using TemporalContract.Players;
 using TemporalContract.Rounds;
+using TemporalContract.Core;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -39,6 +40,21 @@ namespace TemporalContract.Networking
         private bool menuVisible = true;
         private bool observedMatchStarted;
         private readonly HashSet<ulong> connectedSessionClients = new HashSet<ulong>();
+        public string StatusMessage => status;
+        public string ErrorMessage => errorMessage;
+        public bool ExternalPresentation { get; set; }
+        public bool IsMenuVisible => menuVisible;
+        public void ConfigureEndpoint(string address, ushort port)
+        {
+            if(networkManager!=null&&networkManager.IsListening)return;
+            joinAddress=address;portText=port.ToString();errorMessage=string.Empty;
+        }
+        public void StartPractice()
+        {
+            StartHost();
+            if(networkManager.IsHost && LobbyNetworkState.Instance!=null)
+                LobbyNetworkState.Instance.StartPractice();
+        }
 
         private void Awake()
         {
@@ -148,6 +164,7 @@ namespace TemporalContract.Networking
             observedMatchStarted = false;
             SetLocalPlayerInputCaptured(false);
             status = "Disconnected. You can host or join again.";
+            errorMessage=string.Empty;
         }
 
         private bool CanStartNetwork()
@@ -197,8 +214,9 @@ namespace TemporalContract.Networking
             if (response.Approved)
             {
                 bool hostSide = request.ClientNetworkId == NetworkManager.ServerClientId;
-                response.Position = hostSide ? new Vector3(-2.5f, 0f, 0f) : new Vector3(2.5f, 0f, 0f);
-                response.Rotation = hostSide ? Quaternion.identity : Quaternion.Euler(0f, 180f, 0f);
+                var pose=GameplaySceneLayout.PlayerPose(hostSide);
+                response.Position = pose.position;
+                response.Rotation = pose.rotation;
             }
             if (!response.Approved)
             {
@@ -273,6 +291,7 @@ namespace TemporalContract.Networking
         private void OnGUI()
         {
             bool matchStarted = LobbyNetworkState.Instance != null && LobbyNetworkState.Instance.MatchStarted;
+            if(ExternalPresentation && (!matchStarted || !menuVisible))return;
 
             if (matchStarted && !menuVisible)
             {

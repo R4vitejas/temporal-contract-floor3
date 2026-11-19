@@ -14,6 +14,7 @@ namespace TemporalContract.Environment
     {
         public Transform attackerSpawn, defenderSpawn, vipSpawn;
         public LanSessionController session;
+        public TextAsset sourceManifest;
         public NetworkDoor[] doors;
         public NetworkDoor restrictedDoor;
         public KeycardPickup keycard;

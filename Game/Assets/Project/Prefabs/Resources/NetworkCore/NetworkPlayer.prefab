@@ -58,13 +58,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
+  m_Height: 1.8
+  m_Radius: 0.3
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1, z: 0}
+  m_StepOffset: 0.05
+  m_SkinWidth: 0.03
+  m_MinMoveDistance: 0
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &4168592422791100770
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 0
   InScenePlacedSourceGlobalObjectIdHash: 0
@@ -102,7 +102,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ef95f364f35662409437c0e690e7b67, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Networking.OwnerNetworkTransform
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4515faaea43c68148bcf7c68386f701c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Players.NetworkFpsPlayer
   ShowTopMostFoldoutHeaderGroup: 1
   playerCamera: {fileID: 0}
@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 296e07a4bb084784293a23c61cb01887, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Combat.NetworkPlayerHealth
   ShowTopMostFoldoutHeaderGroup: 1
   maximumHealth: 100
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1440a91476c0f5c46ab1ba6df1be895d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Combat.NetworkHitscanWeapon
   ShowTopMostFoldoutHeaderGroup: 1
   magazineSize: 12
@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b32a5d4e4c668c54788ba3ddfccbf3b4, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Networking.InteractionRouter
   playerCamera: {fileID: 7987862247229731066}
   actorComponent: {fileID: 3172848676355577797}
@@ -219,6 +219,7 @@ GameObject:
   - component: {fileID: 8020123603570222074}
   - component: {fileID: 7987862247229731066}
   - component: {fileID: 8553812718759119558}
+  - component: {fileID: 1063055523713841342}
   m_Layer: 0
   m_Name: OwnerCamera
   m_TagString: MainCamera
@@ -300,6 +301,20 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6660808716177593931}
   m_Enabled: 1
+--- !u!114 &1063055523713841342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660808716177593931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a35f7f2a0f8700972b59877e9c5eec37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Players.LocalWeaponView
+  bodyMaterial: {fileID: 2100000, guid: d73d0fa9c1e524c0b9843d1556cf4df3, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 21e77368643b6344c8d8d42859a91027, type: 2}
 --- !u!1 &7673878128459353206
 GameObject:
   m_ObjectHideFlags: 0

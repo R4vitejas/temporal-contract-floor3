@@ -10,6 +10,13 @@ namespace TemporalContract.Environment.EditorTools
 {
     public static class FloorReleaseBuilder
     {
+        [MenuItem("Temporal Contract/Floor/Build Linux Playable MVP")]
+        public static void BuildPlayableMvpLinux()
+        {
+            var scene=UnityEditor.SceneManagement.EditorSceneManager.OpenScene(FullFloorAssemblyBuilder.MainPath);
+            FullFloorAssemblyBuilder.ValidateMain(scene);
+            Build("playable-mvp",FullFloorAssemblyBuilder.MainPath,BuildOptions.Development);
+        }
         [MenuItem("Temporal Contract/Floor/Build Linux Offline Showcase")]
         public static void BuildShowcaseLinux()
         {

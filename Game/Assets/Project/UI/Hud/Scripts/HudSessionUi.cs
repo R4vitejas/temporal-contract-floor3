@@ -35,6 +35,7 @@ namespace TemporalContract.UI.Hud
         [SerializeField] private InputField portInput;
         [SerializeField] private Button hostButton;
         [SerializeField] private Button joinButton;
+        [SerializeField] private Button practiceButton;
         [SerializeField] private Text menuStatusText;
 
         [Header("Lobby")]
@@ -92,6 +93,7 @@ namespace TemporalContract.UI.Hud
         {
             Wire(hostButton, OnHost);
             Wire(joinButton, OnJoin);
+            Wire(practiceButton, OnPractice);
             Wire(readyButton, OnReady);
             Wire(startButton, () => Invoke(a => a.StartMatch()));
             Wire(lobbyDisconnectButton, () => Invoke(a => a.Disconnect()));
@@ -346,6 +348,7 @@ namespace TemporalContract.UI.Hud
             bool connecting = state.phase == SessionPhase.Connecting;
             SetInteractable(hostButton, !connecting);
             SetInteractable(joinButton, !connecting);
+            if(practiceButton) { practiceButton.gameObject.SetActive(actions is IPracticeActions);practiceButton.interactable=!connecting; }
             SetText(menuStatusText, connecting ? "Connecting..." : Fallback(state.statusMessage, "Not connected"));
         }
 
@@ -377,7 +380,7 @@ namespace TemporalContract.UI.Hud
 
             SetText(ammoText, state.reloading ? "RELOADING" : $"{Mathf.Max(0, state.ammo)}/{Mathf.Max(0, state.magazineSize)}");
             SetText(timerText, FormatTime(state.timeRemainingSeconds));
-            SetText(roundText, state.roundNumber > 0 ? $"Round {state.roundNumber}/2" : string.Empty);
+            SetText(roundText, state.isPractice ? "SOLO PRACTICE" : state.roundNumber > 0 ? $"Round {state.roundNumber}/2" : string.Empty);
             SetText(objectiveText, Fallback(state.objective, string.Empty));
             SetText(keycardText, !state.keycardKnown ? string.Empty : state.hasKeycard ? "Keycard: HELD" : "Keycard: not held");
             if (defeatedOverlay != null)
@@ -390,15 +393,15 @@ namespace TemporalContract.UI.Hud
         {
             ShowOnly(roundEndPanel);
             SetText(roundResultText, Fallback(state.roundResult, "Round over"));
-            SetText(roundScoreText, $"You {state.localScore}  -  {state.remoteScore} Opponent");
+            SetText(roundScoreText, state.isPractice ? "Preparing practice results..." : $"You {state.localScore}  -  {state.remoteScore} Opponent");
         }
 
         private void RenderMatchEnd(PresentationState state)
         {
             ShowOnly(matchEndPanel);
             SetText(matchResultText, Fallback(state.matchResult, "MATCH OVER"));
-            SetText(matchScoreText, $"Successful attacks: You {state.localScore}  -  {state.remoteScore} Opponent");
-            SetText(rematchButtonText, state.localRematchReady ? "Waiting for opponent..." : "Ready for rematch");
+            SetText(matchScoreText, state.isPractice ? "Solo practice · " + (state.localScore>0?"Objective completed":"Try again") : $"Successful attacks: You {state.localScore}  -  {state.remoteScore} Opponent");
+            SetText(rematchButtonText, state.isPractice ? "Practice again" : state.localRematchReady ? "Waiting for opponent..." : "Ready for rematch");
             SetInteractable(rematchButton, !state.localRematchReady);
             SetText(rematchStatusText, state.remoteRematchReady ? "Opponent is ready for a rematch" : string.Empty);
         }
@@ -441,6 +444,10 @@ namespace TemporalContract.UI.Hud
         }
 
         private void OnReady() => Invoke(a => a.SetReady(!(hasState && lastState.localReady)));
+        private void OnPractice()
+        {
+            if(TryParsePort(out ushort port) && actions is IPracticeActions practice)practice.StartPractice(port);
+        }
 
         private bool TryParsePort(out ushort port)
         {

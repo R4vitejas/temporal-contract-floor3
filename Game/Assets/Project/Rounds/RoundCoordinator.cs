@@ -55,6 +55,7 @@ namespace TemporalContract.Rounds
             DrawClientId, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<ulong> matchId = new NetworkVariable<ulong>(
             0UL, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<bool> practice = new NetworkVariable<bool>(false);
         private readonly NetworkList<ulong> rematchReadyClientIds = new NetworkList<ulong>();
 
         private static RoundCoordinator instance;
@@ -71,6 +72,7 @@ namespace TemporalContract.Rounds
         public ulong MatchWinnerClientId => matchWinnerClientId.Value;
         public ulong MatchId => matchId.Value;
         public bool IsGameplayActive => phase.Value == MatchPhase.ActiveRound;
+        public bool IsPractice => practice.Value;
         public double TimeRemaining => IsGameplayActive && NetworkManager != null
             ? Math.Max(0d, roundEndsAt.Value - NetworkManager.ServerTime.Time) : 0d;
         public event Action StateChanged;
@@ -94,6 +96,7 @@ namespace TemporalContract.Rounds
             secondAttackWins.OnValueChanged += OnScoreChanged;
             matchWinnerClientId.OnValueChanged += OnStateValueChanged;
             rematchReadyClientIds.OnListChanged += OnRematchReadyChanged;
+            if(IsServer) InvokeInteractionLifecycle("BindActorEligibility",new Func<ulong,bool>(CanActorInteract));
             StateChanged?.Invoke();
         }
 
@@ -113,6 +116,7 @@ namespace TemporalContract.Rounds
                 instance = null;
             }
             TryBindInteractionRoleProvider(null);
+            InvokeInteractionLifecycle("BindActorEligibility",null);
         }
 
         private void Update()
@@ -158,6 +162,7 @@ namespace TemporalContract.Rounds
 
         public bool IsAttacker(ulong clientId) => phase.Value == MatchPhase.ActiveRound
             && attackerClientId.Value == clientId;
+        private bool CanActorInteract(ulong id) => IsServer && IsSpawned && IsGameplayActive && GetPlayerHealth(id)?.IsAlive==true;
 
         public int AttackWinsFor(ulong clientId)
         {
@@ -204,8 +209,18 @@ namespace TemporalContract.Rounds
             attackerClientId.Value = NetworkManager.ServerClientId;
             LobbyNetworkState.Instance?.SetAttackerClientId(attackerClientId.Value);
             matchBegun = true;
+            practice.Value=false;
             EnsureVipSpawned();
             BeginRound();
+        }
+
+        public void BeginPracticeMatch()
+        {
+            if(!IsServer || matchBegun || NetworkManager.ConnectedClientsIds.Count!=1)return;
+            firstClientId.Value=NetworkManager.LocalClientId;secondClientId.Value=DrawClientId;
+            attackerClientId.Value=firstClientId.Value;firstAttackWins.Value=0;secondAttackWins.Value=0;
+            roundIndex.Value=0;matchId.Value=NewMatchId();matchBegun=true;practice.Value=true;
+            rematchReadyClientIds.Clear();EnsureVipSpawned();BeginRound();
         }
 
         public void RequestRematch()
@@ -267,7 +282,7 @@ namespace TemporalContract.Rounds
             }
 
             rematchReadyClientIds.Add(clientId);
-            if (rematchReadyClientIds.Count == 2)
+            if (rematchReadyClientIds.Count == (practice.Value?1:2))
             {
                 StartRematch();
             }
@@ -331,7 +346,7 @@ namespace TemporalContract.Rounds
 
         private void AdvanceAfterRound()
         {
-            if (roundIndex.Value == 0)
+            if (roundIndex.Value == 0 && !practice.Value)
             {
                 roundIndex.Value = 1;
                 attackerClientId.Value = attackerClientId.Value == firstClientId.Value
@@ -376,7 +391,8 @@ namespace TemporalContract.Rounds
                 return;
             }
 
-            GameObject vip = Instantiate(vipPrefab, new Vector3(0f, 0f, 4f), Quaternion.identity);
+            var pose=GameplaySceneLayout.VipPose;
+            GameObject vip = Instantiate(vipPrefab, pose.position, pose.rotation);
             NetworkObject networkObject = vip.GetComponent<NetworkObject>();
             if (networkObject != null)
             {

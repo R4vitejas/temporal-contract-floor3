@@ -28,6 +28,7 @@ namespace TemporalContract.UI.Hud
     public struct PresentationState
     {
         public SessionPhase phase;
+        public bool isPractice;
 
         // lobby
         public bool isHost;
@@ -81,5 +82,9 @@ namespace TemporalContract.UI.Hud
         void StartMatch();
         void Disconnect();
         void RequestRematch();
+    }
+    public interface IPracticeActions
+    {
+        void StartPractice(ushort port);
     }
 }

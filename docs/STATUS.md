@@ -1,5 +1,11 @@
 # Project status
 
+## Playable MVP integration
+
+At the user's request, #9/#26/#27 are now assigned to Ravitejas and their implementation has been taken over. Main now connects the real HUD, weapon/combat presentation, scene-driven player/VIP poses, fitted production controller and authoritative alive/round interaction gate. **Solo practice** uses the production systems without requiring a second client; ordinary LAN matches retain the two-player Ready/Start gate. Main is the default build scene. [Launch and controls](PLAYABLE_MVP.md).
+
+The isolated production flow passes 117 checks, including all 48 actual-player doorway traversals, live ammo/reload/HUD, card/panel/doors, death/results/reset, four confirmed hits killing the scene VIP and disconnect back to menu. The graphical Linux standalone also passes. The floor geometry/materials and original static collision are preserved. Previous statements below that the real adapter and #26/#27 are external implementation dependencies are superseded. Full two-client/two-laptop acceptance remains pending.
+
 ## Final floor contribution — November 19
 
 The user has frozen the floor model for this presentation. PR #19 is merged; #18 was also marked merged through its shared ancestry. Further model/colour polish is deferred. See [Floor demo launch steps](FLOOR_DEMO.md).

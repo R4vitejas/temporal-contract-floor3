@@ -6,6 +6,9 @@ using TemporalContract.Interactions;
 using TemporalContract.Networking;
 using TemporalContract.UI.Board;
 using TemporalContract.UI.Hud;
+using TemporalContract.Core;
+using TemporalContract.Feedback;
+using UnityEngine.UI;
 using Unity.Netcode;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -69,6 +72,7 @@ namespace TemporalContract.Environment.EditorTools
                 SceneManager.SetActiveScene(scene);
                 var root = new GameObject("Full Floor Production Bindings");
                 var bindings = root.AddComponent<FullFloorSceneBindings>();
+                bindings.sourceManifest=AssetDatabase.LoadAssetAtPath<TextAsset>(Root+"/Data/full-floor-manifest.json");
                 var floor = Instantiate(Root + "/Prefabs/Floor3FullEnvironment.prefab", root.transform);
                 PrefabUtility.UnpackPrefabInstance(floor, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
                 var sun = new GameObject("Floor daylight").AddComponent<Light>();
@@ -111,8 +115,11 @@ namespace TemporalContract.Environment.EditorTools
                 bindings.restrictedDoor = bindings.doors.Single(d => d.name.EndsWith("Source_Door.004",StringComparison.Ordinal));
                 bindings.keycard = Interaction<KeycardPickup>("Keycard", root.transform, new Vector3(-18.98f,.12f,-9));
                 var restrictedBounds = doors.Single(d => d.name == "Source_Door.004").bounds;
+                bool restrictedAcrossX=restrictedBounds.size.x>restrictedBounds.size.z;
                 bindings.accessPanel = Interaction<AccessPanel>("AccessPanel", root.transform,
-                    new Vector3(restrictedBounds.max.x + .25f, .05f, restrictedBounds.center.z + .12f));
+                    restrictedAcrossX?new Vector3(restrictedBounds.max.x+.25f,.05f,restrictedBounds.center.z+.12f)
+                        :new Vector3(restrictedBounds.center.x+.12f,.05f,restrictedBounds.max.z+.25f));
+                bindings.accessPanel.transform.rotation=Quaternion.Euler(0,restrictedAcrossX?0:90,0);
                 Set(bindings.accessPanel,"keycard",bindings.keycard); Set(bindings.accessPanel,"restrictedDoor",bindings.restrictedDoor);
                 bindings.lightSwitch = Interaction<WallSwitch>("WallSwitch",root.transform,new Vector3(-3.99f,0,-14.9f));
                 bindings.lightSwitch.transform.rotation=Quaternion.Euler(0,90,0);
@@ -130,6 +137,37 @@ namespace TemporalContract.Environment.EditorTools
                 footprint.transform.localPosition=Vector3.zero;footprint.transform.localScale=Vector3.one;
                 footprint.center=new Vector3(0,.45f,0);footprint.size=new Vector3(.43f,.9f,.67f);
                 FloorAssetBuilder.PlaceModel("Floor3Chair",bindings.movableCover.transform,Vector3.zero);
+                var layout=root.AddComponent<GameplaySceneLayout>();
+                layout.attackerSpawn=bindings.attackerSpawn;layout.defenderSpawn=bindings.defenderSpawn;layout.vipSpawn=bindings.vipSpawn;
+                bindings.attackerSpawn.name="Attacker spawn";bindings.defenderSpawn.name="Defender spawn";bindings.vipSpawn.name="VIP spawn";
+                var adapter=root.AddComponent<ProductionPresentationAdapter>();
+                adapter.session=bindings.session;adapter.hud=bindings.hud;adapter.keycard=bindings.keycard;adapter.map=bindings.map;
+                Set(bindings.hud,"providerComponent",adapter);Set(bindings.hud,"actionsComponent",adapter);
+                var hudSettings=new SerializedObject(bindings.hud);
+                var objectiveText=(Text)hudSettings.FindProperty("objectiveText").objectReferenceValue;
+                objectiveText.fontSize=20;objectiveText.rectTransform.sizeDelta=new Vector2(440,110);
+                var resultText=(Text)hudSettings.FindProperty("matchResultText").objectReferenceValue;
+                resultText.fontSize=48;resultText.rectTransform.sizeDelta=new Vector2(1000,120);
+                var host=(Button)hudSettings.FindProperty("hostButton").objectReferenceValue;
+                var practice=UnityEngine.Object.Instantiate(host.gameObject,host.transform.parent).GetComponent<Button>();
+                practice.name="PracticeButton";practice.GetComponentInChildren<Text>(true).text="Solo practice";
+                var practiceRect=(RectTransform)practice.transform;practiceRect.anchoredPosition=new Vector2(0,-210);practiceRect.sizeDelta=new Vector2(460,56);
+                Set(bindings.hud,"practiceButton",practice);
+                var hudRoot=(GameObject)hudSettings.FindProperty("hudRoot").objectReferenceValue;
+                var hooks=presentation.GetComponentInChildren<CombatFeedbackHooks>(true);
+                var combat=root.AddComponent<ProductionCombatPresenter>();combat.hooks=hooks;
+                combat.presenter=presentation.GetComponentInChildren<FeedbackPresenter>(true);
+                combat.library=AssetDatabase.LoadAssetAtPath<FeedbackCueLibrary>("Assets/Project/Feedback/FeedbackCueLibrary.asset");
+                var hit=new GameObject("Confirmed hit",typeof(RectTransform),typeof(CanvasGroup),typeof(Text));
+                hit.transform.SetParent(hudRoot.transform,false);var hitRect=(RectTransform)hit.transform;
+                hitRect.anchorMin=hitRect.anchorMax=new Vector2(.5f,.5f);hitRect.sizeDelta=new Vector2(50,50);
+                var hitText=hit.GetComponent<Text>();hitText.text="×";hitText.font=host.GetComponentInChildren<Text>(true).font;hitText.fontSize=42;hitText.alignment=TextAnchor.MiddleCenter;hitText.raycastTarget=false;
+                hit.GetComponent<CanvasGroup>().alpha=0;hit.GetComponent<CanvasGroup>().blocksRaycasts=false;
+                var damage=new GameObject("Damage flash",typeof(RectTransform),typeof(CanvasGroup),typeof(Image));damage.transform.SetParent(hudRoot.transform,false);
+                var damageRect=(RectTransform)damage.transform;damageRect.anchorMin=Vector2.zero;damageRect.anchorMax=Vector2.one;damageRect.offsetMin=damageRect.offsetMax=Vector2.zero;
+                damage.GetComponent<Image>().color=new Color(.8f,0,0,.35f);damage.GetComponent<Image>().raycastTarget=false;
+                damage.GetComponent<CanvasGroup>().alpha=0;damage.GetComponent<CanvasGroup>().blocksRaycasts=false;
+                Set(hooks,"hitMarker",hit.GetComponent<CanvasGroup>());Set(hooks,"damageFlash",damage.GetComponent<CanvasGroup>());
                 Physics.SyncTransforms();
                 VerifyPlacement(scene,bindings);
                 ValidateMain(scene);
@@ -142,7 +180,7 @@ namespace TemporalContract.Environment.EditorTools
                 ValidateMain(scene);
                 var settings=EditorBuildSettings.scenes.Where(s=>s.path!=MainPath).ToList();
                 settings.Add(new EditorBuildSettingsScene(MainPath,false)); EditorBuildSettings.scenes=settings.ToArray();
-                Debug.Log("FULL_FLOOR_MAIN_PLACED: 24 source doors, keycard/panel/switch/cover, six boards, reviewed presentation/session; production spawn/capsule, eligibility and HUD adapter acceptance pending. Main remains disabled.");
+                Debug.Log("FULL_FLOOR_MAIN_PLACED: full-floor production systems, scene-driven player/VIP poses, real HUD state/actions, practice entry and combat presentation. Runtime acceptance remains separate.");
             }
             finally
             {
@@ -159,6 +197,8 @@ namespace TemporalContract.Environment.EditorTools
             door.name += " - " + mesh.name;
             door.transform.rotation=Quaternion.Euler(0,acrossX?0:-90,0);
             var settings=new SerializedObject(door);
+            // The adjacent cubicle leaf must swing away from Door.012's clear approach space.
+            settings.FindProperty("openAngle").floatValue=mesh.name=="Source_Door.014"?-90f:90f;
             var hinge=(Transform)settings.FindProperty("hinge").objectReferenceValue;
             foreach(Transform child in hinge.Cast<Transform>().ToArray()) UnityEngine.Object.DestroyImmediate(child.gameObject);
             var pivot=new Vector3(acrossX?bounds.min.x:bounds.center.x,bounds.min.y,acrossX?bounds.center.z:bounds.min.z);
