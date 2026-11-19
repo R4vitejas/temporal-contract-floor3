@@ -76,7 +76,10 @@ namespace TemporalContract.Environment.EditorTools
             foreach(string name in new[]{"Door_Ordinary","Door_Restricted","Keycard","AccessPanel","WallSwitch","Cover_Chair"})
                 if(AssetDatabase.LoadAssetAtPath<GameObject>(InteractionRoot+name+".prefab")==null)throw new InvalidOperationException("Missing interaction prefab: "+name);
             if(AssetDatabase.LoadAssetAtPath<GameObject>(FloorAssetBuilder.Root+"/Prefabs/Floor3FullEnvironment.prefab")!=null)
-                throw new InvalidOperationException("The legacy four-room assembler is superseded. Complete full-floor production bindings before assembly.");
+            {
+                FullFloorAssemblyBuilder.BuildMain();
+                return;
+            }
             string networkScene="Assets/Project/Scenes/NetworkCoreTest.unity";
             if(!File.Exists(networkScene))throw new InvalidOperationException("Network scene/session setup is unavailable.");
             PrepareMain();
@@ -158,6 +161,11 @@ namespace TemporalContract.Environment.EditorTools
             var config=AssetDatabase.LoadAssetAtPath<FloorAssemblyConfig>(ConfigPath);
             if(config==null||!config.subsystemReviewsAccepted||!config.productionCapsuleFitVerified||!config.presentationBindingsVerified||config.presentationPrefab==null)
                 throw new InvalidOperationException("Subsystem/presentation acceptance is not recorded.");
+            if(UnityEngine.Object.FindFirstObjectByType<FullFloorSceneBindings>()!=null)
+            {
+                FullFloorAssemblyBuilder.ValidateMain(SceneManager.GetActiveScene());
+                return;
+            }
             int managers=0,doors=0,cards=0,panels=0,covers=0;
             foreach(var component in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
             {
