@@ -37,7 +37,7 @@ interaction's NetworkObjectId as the subject (see `docs/INTERACTIONS.md`).
    `ShotFired` event, `NotifyHitConfirmed()` when the owner's shot hits, `NotifyDamageReceived(amount)` when
    local health drops. Assign the optional muzzle flash, hit marker and damage flash `CanvasGroup`s.
 4. Recoil: put the player camera under a child pivot and assign it as `recoilPivot` so the player's own pitch
-   code is untouched. Recoil is visual (<= 3 degrees, recovers in about a quarter second), not haptics.
+   code is untouched. Recoil is visual, never accumulates past an absolute 3 degrees (`CombatFeedbackHooks.MaxRecoilDegrees`) however high the Inspector kick or the fire rate, and recovers in about a quarter second. It is not haptics.
 5. Missing subject ids, destroyed sources and a disabled presenter are all handled without exceptions.
 
 ## Test scenes and how to run them
@@ -57,11 +57,11 @@ prefab and scenes with **Temporal Contract > Feedback > Build Sounds, Library An
 
 ## Verification status
 
-Observed (headless Play Mode, Unity 6000.6.8f1, 13 checks, exit 0): a door event plays at the subject's
+Observed (headless Play Mode, Unity 6000.6.8f1, 14 checks, exit 0): a door event plays at the subject's
 position, not the listener's; a far subject plays at the far position; denial is a local 2D sound; duplicate
 events play once; unresolved and destroyed subjects are skipped safely; destroyed sources are unregistered and
 a disabled presenter has no stale subscription; exactly one enabled listener is detected; the weapon cue plays
-at the muzzle; recoil stays at or below 3 degrees and recovers to zero; the hit marker fades out.
+at the muzzle; recoil stays at or below 3 degrees, including repeated shots at the maximum kick setting, and recovers to zero; the hit marker fades out.
 
 NOT verified: hearing direction/distance (batch mode has no audio device; judge it in `FeedbackTest.unity`),
 readability at 1280x720, host and client duplicate playback in a real network session, binding to Samatma's

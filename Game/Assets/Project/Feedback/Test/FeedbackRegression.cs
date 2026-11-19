@@ -103,6 +103,17 @@ namespace TemporalContract.Feedback.Testing
             hooks.NotifyShot(muzzle);
             Check("shot cue plays at the muzzle position", Last(presenter).Positional && Last(presenter).Position == muzzle);
             Check("recoil is restrained (<= 3 degrees)", hooks.CurrentRecoilDegrees > 0f && hooks.CurrentRecoilDegrees <= 3f);
+            // repeated shots at the maximum supported Inspector setting must never exceed the documented cap
+            SetField(hooks, "recoilKickDegrees", CombatFeedbackHooks.MaxRecoilDegrees);
+            for (int shot = 0; shot < 5; shot++)
+            {
+                hooks.NotifyShot(muzzle);
+            }
+
+            Check("repeated shots at maximum kick stay within 3 degrees",
+                hooks.CurrentRecoilDegrees <= CombatFeedbackHooks.MaxRecoilDegrees + 0.0001f
+                && hooks.CurrentRecoilDegrees > 0f);
+            SetField(hooks, "recoilKickDegrees", 0.9f);
             hooks.NotifyHitConfirmed();
             yield return new WaitForSecondsRealtime(1.2f);
             Check("recoil recovers to zero", hooks.CurrentRecoilDegrees == 0f

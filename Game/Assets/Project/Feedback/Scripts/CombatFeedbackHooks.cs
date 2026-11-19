@@ -11,6 +11,9 @@ namespace TemporalContract.Feedback
     /// </summary>
     public sealed class CombatFeedbackHooks : MonoBehaviour
     {
+        /// <summary>Hard cap for accumulated recoil, regardless of the Inspector kick or the shot rate.</summary>
+        public const float MaxRecoilDegrees = 3f;
+
         [Header("Sound")]
         [SerializeField] private FeedbackPresenter presenter;
         [SerializeField] private FeedbackCueLibrary library;
@@ -21,7 +24,7 @@ namespace TemporalContract.Feedback
 
         [Header("Recoil (optional): put the camera under this pivot so the player's own pitch is untouched")]
         [SerializeField] private Transform recoilPivot;
-        [SerializeField, Range(0f, 3f)] private float recoilKickDegrees = 0.9f;
+        [SerializeField, Range(0f, MaxRecoilDegrees)] private float recoilKickDegrees = 0.9f;
         [SerializeField, Min(1f)] private float recoilRecoverPerSecond = 9f;
 
         [Header("Hit marker / damage flash (optional)")]
@@ -44,7 +47,7 @@ namespace TemporalContract.Feedback
 
         public void NotifyShot(Vector3 muzzleWorldPosition)
         {
-            recoil = Mathf.Min(recoil + recoilKickDegrees, recoilKickDegrees * 2.5f);
+            recoil = Mathf.Min(recoil + recoilKickDegrees, MaxRecoilDegrees);
             flashUntil = Time.unscaledTime + muzzleFlashSeconds;
             if (muzzleFlash != null)
             {
