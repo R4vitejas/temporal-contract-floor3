@@ -29,3 +29,10 @@ source-assets/
 raw-assets/
 Builds/
 Deliverables/
+
+# Raw supplied floor models: huge, stay local (never commit)
+*.obj
+*.blend
+*.blend1
+*.glb
+3/
