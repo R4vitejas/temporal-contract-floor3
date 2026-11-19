@@ -113,12 +113,26 @@ namespace TemporalContract.UI.Board.Testing
             settings.editorInputBehaviorInPlayMode =
                 InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
 #endif
-            Keyboard keyboard = Keyboard.current ?? InputSystem.AddDevice<Keyboard>();
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Escape));
-            yield return null;
-            yield return null;
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState());
-            yield return null;
+            // Isolated synthetic keyboard: never depends on the native keyboard, focus or Keyboard.current history.
+            Keyboard keyboard = InputSystem.AddDevice<Keyboard>("BoardRegressionKeyboard");
+            try
+            {
+                // Queued only: the next frame's input update processes it before the panel's Update runs,
+                // so wasPressedThisFrame is true exactly when the panel polls it.
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Escape));
+                // Give the panel's own Update a few frames to observe the press, stopping as soon as it reacts.
+                for (int frame = 0; frame < 5 && panel.IsOpen; frame++)
+                {
+                    yield return null;
+                }
+
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState());
+                yield return null;
+            }
+            finally
+            {
+                InputSystem.RemoveDevice(keyboard);
+            }
         }
 
         private static string FindText(string objectName)
