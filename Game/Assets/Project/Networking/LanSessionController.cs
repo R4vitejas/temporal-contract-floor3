@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using TemporalContract.Combat;
 using TemporalContract.Networking;
 using TemporalContract.Players;
+using TemporalContract.Rounds;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -20,12 +22,14 @@ namespace TemporalContract.Networking
         private const int WindowId = 7321;
         private const string PlayerResourcePath = "NetworkCore/NetworkPlayer";
         private const string LobbyResourcePath = "NetworkCore/LobbyState";
+        private const string VipResourcePath = "NetworkCore/Vip";
 
         private static LanSessionController instance;
         private NetworkManager networkManager;
         private UnityTransport transport;
         private GameObject lobbyPrefab;
         private GameObject playerPrefab;
+        private GameObject vipPrefab;
         private string joinAddress = "127.0.0.1";
         private string portText = DefaultPort.ToString();
         private string status = "Ready to host or join a LAN session.";
@@ -51,6 +55,7 @@ namespace TemporalContract.Networking
             lobbyPrefab = Resources.Load<GameObject>(LobbyResourcePath);
 
             playerPrefab = Resources.Load<GameObject>(PlayerResourcePath);
+            vipPrefab = Resources.Load<GameObject>(VipResourcePath);
             if (playerPrefab == null || lobbyPrefab == null)
             {
                 errorMessage = "Network prefabs are missing. Run Temporal Contract > Build Network Core Assets.";
@@ -63,6 +68,7 @@ namespace TemporalContract.Networking
             networkManager.NetworkConfig.ConnectionApproval = true;
             RegisterNetworkPrefab(playerPrefab);
             RegisterNetworkPrefab(lobbyPrefab);
+            RegisterNetworkPrefab(vipPrefab);
             networkManager.ConnectionApprovalCallback = ApproveConnection;
             networkManager.OnClientConnectedCallback += OnClientConnected;
             networkManager.OnClientDisconnectCallback += OnClientDisconnected;
@@ -148,7 +154,7 @@ namespace TemporalContract.Networking
         {
             errorMessage = string.Empty;
             if (networkManager == null || transport == null || lobbyPrefab == null
-                || playerPrefab == null)
+                || playerPrefab == null || vipPrefab == null)
             {
                 errorMessage = "Network setup is incomplete. Close and reopen Play Mode after building network assets.";
                 return false;
@@ -359,7 +365,7 @@ namespace TemporalContract.Networking
                 }
                 else if (lobby != null)
                 {
-                    GUILayout.Label("Match in progress. F1 opens/closes this menu.");
+                    DrawCombatState(lobby);
                 }
                 if (GUILayout.Button("Disconnect")) Disconnect();
             }
@@ -369,6 +375,35 @@ namespace TemporalContract.Networking
                 GUILayout.Label(errorMessage, GUI.skin.box);
             }
             GUI.DragWindow(new Rect(0f, 0f, 10000f, 24f));
+        }
+
+        private void DrawCombatState(LobbyNetworkState lobby)
+        {
+            RoundCoordinator rounds = RoundCoordinator.Instance;
+            bool isAttacker = rounds != null ? rounds.IsAttacker(networkManager.LocalClientId)
+                : lobby.IsAttacker(networkManager.LocalClientId);
+            string role = isAttacker ? "Attacker" : "Defender";
+            GUILayout.Label($"Match in progress — {role}. F1 closes this menu.");
+            if (rounds != null)
+            {
+                GUILayout.Label($"Round {rounds.RoundNumber}/2 · {rounds.Phase} · {rounds.TimeRemaining:0}s");
+                GUILayout.Label(rounds.GetRoundResultText());
+                GUILayout.Label(rounds.GetMatchResultText());
+                if (rounds.Phase == MatchPhase.MatchResult)
+                {
+                    GUILayout.Label($"Rematch ready: {(rounds.IsRematchReady(networkManager.LocalClientId) ? "Yes" : "No")}");
+                    if (GUILayout.Button("Ready for rematch")) rounds.RequestRematch();
+                }
+            }
+            NetworkFpsPlayer player = NetworkFpsPlayer.LocalOwner;
+            NetworkPlayerHealth health = player != null ? player.GetComponent<NetworkPlayerHealth>() : null;
+            NetworkHitscanWeapon weapon = player != null ? player.GetComponent<NetworkHitscanWeapon>() : null;
+            if (health != null && weapon != null)
+            {
+                GUILayout.Label($"Health: {health.CurrentHealth}  |  Ammo: {weapon.Ammunition}/{weapon.MagazineSize}"
+                    + (weapon.IsReloading ? "  |  Reloading" : string.Empty));
+            }
+            GUILayout.Label("WASD move · Mouse aim · Left click fire · R reload · F1 menu");
         }
 
     }

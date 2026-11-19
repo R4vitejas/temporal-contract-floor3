@@ -1,5 +1,7 @@
 using TemporalContract.Networking;
+using TemporalContract.Combat;
 using TemporalContract.Players;
+using TemporalContract.Rounds;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using Unity.Netcode.Transports.UTP;
@@ -13,6 +15,7 @@ namespace TemporalContract.EditorTools
     {
         private const string PlayerPrefabPath = "Assets/Project/Prefabs/Resources/NetworkCore/NetworkPlayer.prefab";
         private const string LobbyPrefabPath = "Assets/Project/Prefabs/Resources/NetworkCore/LobbyState.prefab";
+        private const string VipPrefabPath = "Assets/Project/Prefabs/Resources/NetworkCore/Vip.prefab";
         private const string TestScenePath = "Assets/Project/Scenes/NetworkCoreTest.unity";
 
         [MenuItem("Temporal Contract/Build Network Core Assets")]
@@ -22,6 +25,7 @@ namespace TemporalContract.EditorTools
             EnsureFolder("Assets/Project/Prefabs/Resources/NetworkCore");
             BuildPlayerPrefab();
             BuildLobbyPrefab();
+            BuildVipPrefab();
             BuildTestScene();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -41,6 +45,8 @@ namespace TemporalContract.EditorTools
             player.AddComponent<NetworkObject>();
             player.AddComponent<OwnerNetworkTransform>();
             NetworkFpsPlayer controller = player.AddComponent<NetworkFpsPlayer>();
+            player.AddComponent<NetworkPlayerHealth>();
+            player.AddComponent<NetworkHitscanWeapon>();
             InteractionRouter router = player.AddComponent<InteractionRouter>();
 
             GameObject view = new GameObject("OwnerCamera");
@@ -62,8 +68,23 @@ namespace TemporalContract.EditorTools
             GameObject lobby = new GameObject("LobbyState");
             lobby.AddComponent<NetworkObject>();
             lobby.AddComponent<LobbyNetworkState>();
+            lobby.AddComponent<RoundCoordinator>();
             PrefabUtility.SaveAsPrefabAsset(lobby, LobbyPrefabPath);
             Object.DestroyImmediate(lobby);
+        }
+
+        private static void BuildVipPrefab()
+        {
+            GameObject vip = new GameObject("StationaryVIP");
+            GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            body.name = "VIP Body";
+            body.transform.SetParent(vip.transform, false);
+            body.transform.localPosition = new Vector3(0f, 0.9f, 0f);
+            body.transform.localScale = new Vector3(0.75f, 0.9f, 0.75f);
+            vip.AddComponent<NetworkObject>();
+            vip.AddComponent<VipHealth>();
+            PrefabUtility.SaveAsPrefabAsset(vip, VipPrefabPath);
+            Object.DestroyImmediate(vip);
         }
 
         private static void BuildTestScene()
@@ -83,6 +104,7 @@ namespace TemporalContract.EditorTools
             session.AddComponent<UnityTransport>();
             session.AddComponent<NetworkManager>();
             session.AddComponent<LanSessionController>();
+            new GameObject("Combat Test Spawner").AddComponent<NetworkCombatTestBootstrap>();
 
             EditorSceneManager.SaveScene(scene, TestScenePath);
             EditorBuildSettingsScene testScene = new EditorBuildSettingsScene(TestScenePath, true);
