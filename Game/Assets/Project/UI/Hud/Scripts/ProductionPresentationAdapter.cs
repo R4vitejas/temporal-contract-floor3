@@ -72,7 +72,7 @@ namespace TemporalContract.UI.Hud
                 localScore=round?round.AttackWinsFor(local):0,remoteScore=round&&remote?round.AttackWinsFor(remote.OwnerClientId):0,
                 localRematchReady=round&&round.IsRematchReady(local),remoteRematchReady=round&&remote&&round.IsRematchReady(remote.OwnerClientId)
             };
-            state.objective=state.role==PlayerRole.Attacker?"Find the keycard; unlock the staff cabin; eliminate the VIP.\nLMB fire · R reload · E interact · F1 menu":"Protect the VIP until time expires.\nLMB fire · R reload · E interact · F1 menu";
+            state.objective=state.role==PlayerRole.Attacker?"Eliminate the VIP in Staff Cabin.\nKeycard: west corridor.\nLMB fire · R reload · E interact · F1 menu":"Protect the VIP until time expires.\nLMB fire · R reload · E interact · F1 menu";
             if(!string.IsNullOrEmpty(state.errorMessage))state.phase=SessionPhase.Error;
             else if(manager && manager.IsListening)
             {

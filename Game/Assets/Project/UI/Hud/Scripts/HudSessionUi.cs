@@ -393,14 +393,14 @@ namespace TemporalContract.UI.Hud
         {
             ShowOnly(roundEndPanel);
             SetText(roundResultText, Fallback(state.roundResult, "Round over"));
-            SetText(roundScoreText, $"You {state.localScore}  -  {state.remoteScore} Opponent");
+            SetText(roundScoreText, state.isPractice ? "Preparing practice results..." : $"You {state.localScore}  -  {state.remoteScore} Opponent");
         }
 
         private void RenderMatchEnd(PresentationState state)
         {
             ShowOnly(matchEndPanel);
             SetText(matchResultText, Fallback(state.matchResult, "MATCH OVER"));
-            SetText(matchScoreText, $"Successful attacks: You {state.localScore}  -  {state.remoteScore} Opponent");
+            SetText(matchScoreText, state.isPractice ? "Solo practice · " + (state.localScore>0?"Objective completed":"Try again") : $"Successful attacks: You {state.localScore}  -  {state.remoteScore} Opponent");
             SetText(rematchButtonText, state.isPractice ? "Practice again" : state.localRematchReady ? "Waiting for opponent..." : "Ready for rematch");
             SetInteractable(rematchButton, !state.localRematchReady);
             SetText(rematchStatusText, state.remoteRematchReady ? "Opponent is ready for a rematch" : string.Empty);

@@ -144,6 +144,10 @@ namespace TemporalContract.Environment.EditorTools
                 adapter.session=bindings.session;adapter.hud=bindings.hud;adapter.keycard=bindings.keycard;adapter.map=bindings.map;
                 Set(bindings.hud,"providerComponent",adapter);Set(bindings.hud,"actionsComponent",adapter);
                 var hudSettings=new SerializedObject(bindings.hud);
+                var objectiveText=(Text)hudSettings.FindProperty("objectiveText").objectReferenceValue;
+                objectiveText.fontSize=20;objectiveText.rectTransform.sizeDelta=new Vector2(440,110);
+                var resultText=(Text)hudSettings.FindProperty("matchResultText").objectReferenceValue;
+                resultText.fontSize=48;resultText.rectTransform.sizeDelta=new Vector2(1000,120);
                 var host=(Button)hudSettings.FindProperty("hostButton").objectReferenceValue;
                 var practice=UnityEngine.Object.Instantiate(host.gameObject,host.transform.parent).GetComponent<Button>();
                 practice.name="PracticeButton";practice.GetComponentInChildren<Text>(true).text="Solo practice";
