@@ -21,6 +21,8 @@ namespace TemporalContract.Environment
         public AccessPanel accessPanel;
         public WallSwitch lightSwitch;
         public MovableCover movableCover;
+        public WindowPowerConsole windowPower;
+        public SlidingWindow vipWindow;
         public ClassroomBoard[] boards;
         public FloorMapPanel map;
         public HudSessionUi hud;

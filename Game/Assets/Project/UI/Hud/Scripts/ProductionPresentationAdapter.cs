@@ -16,6 +16,7 @@ namespace TemporalContract.UI.Hud
     {
         public LanSessionController session;
         public KeycardPickup keycard;
+        public WindowPowerConsole windowPower;
         public HudSessionUi hud;
         public FloorMapPanel map;
         public event Action StateChanged;
@@ -75,6 +76,7 @@ namespace TemporalContract.UI.Hud
                 localRematchReady=round&&round.IsRematchReady(local),remoteRematchReady=round&&remote&&round.IsRematchReady(remote.OwnerClientId)
             };
             state.objective=state.role==PlayerRole.Attacker?"Eliminate the VIP in Staff Cabin.\nKeycard: west corridor.\nLMB fire · R reload · E interact · F1 menu":"Protect the VIP until time expires.\nLMB fire · R reload · E interact · F1 menu";
+            if(windowPower&&state.phase!=SessionPhase.Error)state.objective += windowPower.IsPowered?"\nVIP windows powered — use the cabin window latch.":"\nVIP windows: enable the corridor power console.";
             if(!string.IsNullOrEmpty(state.errorMessage))state.phase=SessionPhase.Error;
             else if(manager && manager.IsListening)
             {
