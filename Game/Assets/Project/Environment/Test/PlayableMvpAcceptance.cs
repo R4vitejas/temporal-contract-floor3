@@ -156,6 +156,43 @@ namespace TemporalContract.Environment.Testing
             InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.E));yield return null;yield return null;
             Check(!binding.movableCover.IsHeld,"E places the held cover through the production router");
             InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
+            var roomLights=FindObjectsByType<WallSwitch>(FindObjectsSortMode.None);
+            Check(roomLights.Length==7&&roomLights.All(l=>l.IsSpawned),"Seven production rooms have spawned light controls");
+            Check(FindObjectsByType<MovableCover>(FindObjectsSortMode.None).Length==3,"Three carryable chairs are placed around the floor");
+            Check(binding.movableCover.GetComponentsInChildren<Renderer>(true).Count(r=>r.enabled)>=12,"Carryable chair has a seat, back, legs and braces");
+            foreach(var roomSwitch in roomLights)
+            {
+                PlaceNear(roomSwitch);Check(roomSwitch.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,roomSwitch.NetworkObjectId))&&!roomSwitch.IsOn,"Room light can be switched off: "+roomSwitch.name);
+                var lamps=(Light[])typeof(WallSwitch).GetField("lights",Private).GetValue(roomSwitch);
+                Check(lamps.Length==2&&lamps.All(l=>l.intensity<.11f),"Lights-off substantially dims both room fixtures");
+                if(roomSwitch==binding.lightSwitch){player.transform.rotation=Quaternion.Euler(0,160,0);Capture("09-classroom-lights-off.png");yield return new WaitForSecondsRealtime(.15f);}
+                Check(roomSwitch.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,roomSwitch.NetworkObjectId))&&roomSwitch.IsOn&&lamps.All(l=>l.intensity>2.9f),"Room light restores its on intensity");
+                if(roomSwitch==binding.lightSwitch){Capture("08-classroom-lights-on.png");yield return new WaitForSecondsRealtime(.15f);}
+            }
+            var fanControls=FindObjectsByType<NetworkFanControl>(FindObjectsSortMode.None);
+            Check(fanControls.Length>=6,"All classrooms have functional fan controls");
+            foreach(var fan in fanControls)
+            {
+                PlaceNear(fan);var before=fan.rotors[0].rotation;
+                Check(fan.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,fan.NetworkObjectId))&&fan.IsRunning,"Ceiling fan starts through authoritative interaction");
+                yield return new WaitForSecondsRealtime(.15f);Check(Quaternion.Angle(before,fan.rotors[0].rotation)>10,"Existing fan blades visibly rotate");
+                Check(fan.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,fan.NetworkObjectId))&&!fan.IsRunning,"Ceiling fan can be stopped");
+            }
+            var power=FindFirstObjectByType<WindowPowerConsole>();var window=FindFirstObjectByType<SlidingWindow>();
+            Check(power&&window&&power.IsSpawned&&window.IsSpawned&&!power.IsPowered&&!window.IsOpen,"VIP sliding window starts closed and unpowered");
+            PlaceNear(window);Check(!window.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,window.NetworkObjectId)),"VIP window cannot open before the corridor console is enabled");
+            PlaceNear(power);Check(power.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,power.NetworkObjectId))&&power.IsPowered,"Corridor console enables shared window power");
+            Vector3 panePoint=window.slidingPane.GetComponent<Collider>().bounds.center;
+            Check(Physics.Raycast(panePoint+Vector3.left,Vector3.right,out var glassHit,1.8f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)&&glassHit.collider.transform==window.slidingPane,"Closed VIP window blocks the exterior shot lane");
+            PlaceNear(window);Check(window.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,window.NetworkObjectId))&&window.IsOpen,"Powered VIP window slides open");
+            yield return new WaitForSecondsRealtime(1);
+            Check(!Physics.Raycast(panePoint+Vector3.left,Vector3.right,1.6f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore),"Open window clears the exact shooting lane without invisible baked glass collision");
+            Capture("10-vip-window-open.png");yield return new WaitForSecondsRealtime(.15f);
+            PlaceNear(window);Check(window.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,window.NetworkObjectId))&&!window.IsOpen,"VIP window closes again");
+            yield return new WaitForSecondsRealtime(1);
+            Check(Physics.Raycast(panePoint+Vector3.left,Vector3.right,1.8f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore),"Closed window restores bullet collision");
+            PlaceNear(binding.movableCover);player.transform.LookAt(binding.movableCover.transform.position+Vector3.up*.45f);
+            Capture("11-detailed-chair.png");yield return new WaitForSecondsRealtime(.15f);
             var weapon=player.GetComponent<NetworkHitscanWeapon>();
             Check(weapon.Ammunition==12,"Real magazine starts full");weapon.RequestFire();
             yield return new WaitForSecondsRealtime(.1f);
@@ -226,6 +263,7 @@ namespace TemporalContract.Environment.Testing
             Check(rounds.Phase==MatchPhase.MatchResult&&binding.hud.CurrentPhase==SessionPhase.MatchEnd,"Practice reaches match results without a second client");
             adapter.RequestRematch();yield return new WaitForSecondsRealtime(.2f);
             Check(rounds.IsGameplayActive&&health.IsAlive&&weapon.Ammunition==12,"Actual practice restart restores player and ammunition");
+            Check(!power.IsPowered&&!window.IsOpen&&fanControls.All(f=>!f.IsRunning)&&roomLights.All(l=>l.IsOn),"Round reset restores window power, panes, fans and room lights");
             Check(!binding.keycard.IsCollected&&!binding.accessPanel.IsGranted&&binding.restrictedDoor.IsLocked&&binding.doors.All(d=>!d.IsOpen),"Restart resets card/panel/doors");
             Check(Vector3.Distance(player.Position,binding.attackerSpawn.position)<.2f,"Restart uses scene spawn again");
             // A bounded shooting fixture aims the real host weapon at the real scene VIP.

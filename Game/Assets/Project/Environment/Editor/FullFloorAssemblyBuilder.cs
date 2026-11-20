@@ -169,6 +169,7 @@ namespace TemporalContract.Environment.EditorTools
                 damage.GetComponent<CanvasGroup>().alpha=0;damage.GetComponent<CanvasGroup>().blocksRaycasts=false;
                 Set(hooks,"hitMarker",hit.GetComponent<CanvasGroup>());Set(hooks,"damageFlash",damage.GetComponent<CanvasGroup>());
                 GamePolishBuilder.Apply(scene);
+                RoomInteractionBuilder.Apply(scene);
                 Physics.SyncTransforms();
                 VerifyPlacement(scene,bindings);
                 ValidateMain(scene);
