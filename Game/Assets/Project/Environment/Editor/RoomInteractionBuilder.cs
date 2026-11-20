@@ -53,7 +53,7 @@ namespace TemporalContract.Environment.EditorTools
             white=Material("Room_Ceiling",new Color(.57f,.61f,.61f));glow=Material("Room_Lamp",new Color(.85f,.94f,1),true);
             ink=Material("Room_Control",new Color(.025f,.045f,.06f));font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             BuildChair(binding.movableCover);
-            foreach(var spec in new[]{new Vector3(-38.8f,.08f,-15.8f),new Vector3(-2.9f,.08f,3.3f)})
+            foreach(var spec in new[]{new Vector3(-38.4f,.08f,-18f),new Vector3(19.6f,.08f,3.4f)})
             {
                 var chair=Object.Instantiate(binding.movableCover.gameObject,root).GetComponent<MovableCover>();chair.name="Movable wooden chair";chair.transform.position=spec;
             }

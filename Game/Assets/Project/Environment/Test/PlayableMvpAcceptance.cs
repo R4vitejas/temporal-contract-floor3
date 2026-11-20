@@ -169,6 +169,13 @@ namespace TemporalContract.Environment.Testing
                 Check(roomSwitch.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,roomSwitch.NetworkObjectId))&&roomSwitch.IsOn&&lamps.All(l=>l.intensity>2.9f),"Room light restores its on intensity");
                 if(roomSwitch==binding.lightSwitch){Capture("08-classroom-lights-on.png");yield return new WaitForSecondsRealtime(.15f);}
             }
+            foreach(var chair in FindObjectsByType<MovableCover>(FindObjectsSortMode.None))
+            {
+                var footprint=(BoxCollider)typeof(MovableCover).GetField("footprint",Private).GetValue(chair);
+                Check(!Physics.OverlapBox(footprint.bounds.center,footprint.bounds.extents*.95f,Quaternion.identity,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore).Any(c=>!c.transform.IsChildOf(chair.transform)&&c.GetComponentInParent<NetworkFpsPlayer>()==null),"Movable chair starts clear of fixed walls and furniture");
+                PlaceNear(chair);Check(Request(chair)&&chair.IsHeld,"Each detailed chair can actually be picked up");
+                chair.ResetForRound(new RoundResetContext(0,0));Check(!chair.IsHeld,"Each detailed chair restores its round baseline");
+            }
             var fanControls=FindObjectsByType<NetworkFanControl>(FindObjectsSortMode.None);
             Check(fanControls.Length>=6,"All classrooms have functional fan controls");
             foreach(var fan in fanControls)
@@ -191,7 +198,7 @@ namespace TemporalContract.Environment.Testing
             PlaceNear(window);Check(window.TryHandleInteraction(new InteractionRequest(player.OwnerClientId,window.NetworkObjectId))&&!window.IsOpen,"VIP window closes again");
             yield return new WaitForSecondsRealtime(1);
             Check(Physics.Raycast(panePoint+Vector3.left,Vector3.right,1.8f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore),"Closed window restores bullet collision");
-            PlaceNear(binding.movableCover);player.transform.LookAt(binding.movableCover.transform.position+Vector3.up*.45f);
+            PlaceNear(binding.movableCover);var chairDirection=binding.movableCover.transform.position-player.Position;player.transform.rotation=Quaternion.LookRotation(new Vector3(chairDirection.x,0,chairDirection.z));
             Capture("11-detailed-chair.png");yield return new WaitForSecondsRealtime(.15f);
             var weapon=player.GetComponent<NetworkHitscanWeapon>();
             Check(weapon.Ammunition==12,"Real magazine starts full");weapon.RequestFire();
