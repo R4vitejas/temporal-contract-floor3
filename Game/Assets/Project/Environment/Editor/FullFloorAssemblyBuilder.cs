@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using TemporalContract.Environment.Testing;
 using TemporalContract.Interactions;
@@ -238,7 +239,9 @@ namespace TemporalContract.Environment.EditorTools
             VerifyMeshes(scene);
             if(Components<NetworkManager>(scene).Length!=1 || Components<NetworkDoor>(scene).Length!=24
                 || Components<KeycardPickup>(scene).Length!=1 || Components<AccessPanel>(scene).Length!=1
-                || Components<WallSwitch>(scene).Length!=1 || Components<MovableCover>(scene).Length!=1
+                || Components<WallSwitch>(scene).Length!=7 || Components<MovableCover>(scene).Length!=3
+                || Components<NetworkFanControl>(scene).Length!=7 || Components<WindowPowerConsole>(scene).Length!=1
+                || Components<SlidingWindow>(scene).Length!=1 || Components<RoomInteractionContent>(scene).Length!=1
                 || Components<ClassroomBoard>(scene).Length!=6 || Components<EventSystem>(scene).Length!=1)
                 throw new InvalidOperationException("Full-floor production composition is incomplete.");
             foreach(var behaviour in Components<MonoBehaviour>(scene))
@@ -285,7 +288,11 @@ namespace TemporalContract.Environment.EditorTools
                                     throw new InvalidOperationException("Source bounds changed: "+mesh.name);
                         }
                         var actualCollision=Components<Transform>(scene).Single(t=>t.name=="Baked floor collision");
-                        if(!CollisionSignature(expectedCollision).SequenceEqual(CollisionSignature(actualCollision)))
+                        var roomContent=Components<RoomInteractionContent>(scene).SingleOrDefault();
+                        var windowReplacements=roomContent?new HashSet<Collider>(roomContent.replacedCollision):null;
+                        if(roomContent&&(roomContent.replacedGlass.Length!=2||roomContent.replacedGlass.Any(r=>r.enabled)||roomContent.replacedCollision.Any(c=>c.enabled)))
+                            throw new InvalidOperationException("Source window replacement must be disabled in favor of the movable panes.");
+                        if(!CollisionSignature(expectedCollision).SequenceEqual(CollisionSignature(actualCollision,windowReplacements)))
                             throw new InvalidOperationException("The tested static collision bake changed: "+path);
                         if(Components<ClassroomBoard>(scene).Length!=6)throw new InvalidOperationException("Classroom board targets missing.");
                         if(path==MainPath)
@@ -299,17 +306,17 @@ namespace TemporalContract.Environment.EditorTools
                     }
                     finally {SceneManager.SetActiveScene(original);if(!wasLoaded)EditorSceneManager.CloseScene(scene,true);}
                 }
-                Debug.Log("FULL_FLOOR_SAVED_SCENES_PASS: all 1767 source mesh/material identities retained; Main source bounds match; static collision bake unchanged in Main/showcase; unique network hashes; six boards; root session; no production test scripts/listeners.");
+                Debug.Log("FULL_FLOOR_SAVED_SCENES_PASS: all 1767 source mesh/material identities retained; Main source bounds match; original collision shapes retained, VIP glazing replaced by moving panes in Main; unique network hashes; six boards; root session; no production test scripts/listeners.");
             }
             finally {PrefabUtility.UnloadPrefabContents(reference);}
         }
-        static string[] CollisionSignature(Transform root)
+        static string[] CollisionSignature(Transform root,HashSet<Collider> windowReplacements=null)
         {
             return root.GetComponentsInChildren<Collider>(true).Select(c=>
             {
                 string shape=c is BoxCollider box?box.center.ToString("F5")+box.size.ToString("F5"):
                     c is MeshCollider mesh?AssetDatabase.GetAssetPath(mesh.sharedMesh):c.GetType().FullName;
-                return c.name+"/"+c.transform.position.ToString("F5")+c.transform.rotation.ToString("F5")+c.transform.lossyScale.ToString("F5")+"/"+shape+"/"+c.isTrigger+"/"+c.enabled;
+                return c.name+"/"+c.transform.position.ToString("F5")+c.transform.rotation.ToString("F5")+c.transform.lossyScale.ToString("F5")+"/"+shape+"/"+c.isTrigger+"/"+(windowReplacements!=null&&windowReplacements.Contains(c)?true:c.enabled);
             }).OrderBy(s=>s,StringComparer.Ordinal).ToArray();
         }
         static void VerifyPlacement(Scene scene,FullFloorSceneBindings bindings)
