@@ -90,7 +90,7 @@ namespace TemporalContract.Environment.EditorTools
         {
             Vector3 face=room.control.x>room.center.x?Vector3.left:Vector3.right;
             var group=new GameObject(room.name).transform;group.SetParent(root,false);
-            Part("Ceiling",group,room.center+Vector3.up*3.12f,new Vector3(room.size.x,.12f,room.size.y),white);
+            Part("Ceiling",group,room.center+Vector3.up*3.04f,new Vector3(room.size.x+.55f,.14f,room.size.y+.55f),white);
             var lights=new List<Light>();var emitters=new List<Renderer>();
             foreach(float side in new[]{-1f,1f})
             {
@@ -155,7 +155,9 @@ namespace TemporalContract.Environment.EditorTools
             var cut=new Bounds(bounds.center,new Vector3(.5f,bounds.size.y,bounds.size.z));
             foreach(var renderer in glass)
             {
-                renderer.enabled=false;foreach(var collider in renderer.GetComponents<Collider>())if(collider.enabled){collider.enabled=false;disabled.Add(collider);}
+                renderer.enabled=false;
+                foreach(var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None).Where(c=>c.enabled&&(c.gameObject==renderer.gameObject||c.name=="Surface - "+renderer.name)))
+                {collider.enabled=false;disabled.Add(collider);}
             }
             // Split only baked rectangles covering this exact window; keep their remaining wall area solid.
             foreach(var box in Object.FindObjectsByType<BoxCollider>(FindObjectsSortMode.None).Where(c=>c.name.StartsWith("Solid wall ")&&c.enabled).ToArray())
@@ -199,7 +201,7 @@ namespace TemporalContract.Environment.EditorTools
         private static void Label(string text,Transform parent,Vector3 position,Vector3 face,float size)
         {
             var obj=new GameObject("Label - "+text.Split('\n')[0]);obj.transform.SetParent(parent,false);obj.transform.position=position;obj.transform.rotation=Quaternion.LookRotation(-face);
-            var label=obj.AddComponent<TextMesh>();label.text=text;label.font=font;label.fontSize=48;label.characterSize=size;label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.color=new Color(.88f,.9f,.83f);label.GetComponent<Renderer>().sharedMaterial=font.material;
+            var label=obj.AddComponent<TextMesh>();label.text=text;label.font=font;label.fontSize=48;label.characterSize=size*.2f;label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.color=new Color(.88f,.9f,.83f);label.GetComponent<Renderer>().sharedMaterial=font.material;
         }
         private static Material Material(string name,Color color,bool emissive=false)
         {
