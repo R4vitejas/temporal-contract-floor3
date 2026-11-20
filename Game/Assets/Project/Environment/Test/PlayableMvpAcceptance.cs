@@ -304,7 +304,7 @@ namespace TemporalContract.Environment.Testing
             var collider=target.GetComponentsInChildren<Collider>().FirstOrDefault(c=>c.enabled&&!c.isTrigger);
             Vector3 point=origin?origin.position:collider?collider.bounds.center:target.transform.position;
             body.enabled=false;
-            foreach(float distance in new[]{.8f,1.1f,.5f,.4f})
+            foreach(float distance in new[]{.8f,1.1f,.5f,.4f,1.5f,2f})
                 foreach(var direction in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left,new Vector3(1,0,1).normalized,new Vector3(-1,0,-1).normalized})
                 {
                     Vector3 candidate=point+direction*distance;candidate.y=.065f;candidate=Ground(candidate);

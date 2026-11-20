@@ -27,10 +27,10 @@ namespace TemporalContract.Environment.EditorTools
         private static readonly Room[] Rooms={
             new Room("CLASSROOM 01",-35.94f,-18.51f,8.7f,9.3f,-39.97f,-14.9f),
             new Room("CLASSROOM 02",-.02f,-18.51f,8.7f,9.3f,-3.99f,-14.9f),
-            new Room("CLASSROOM 03",8.64f,-18.51f,8.6f,9.3f,4.65f,-14.9f),
+            new Room("CLASSROOM 03",8.64f,-18.51f,8.6f,9.3f,12.65f,-14.8f),
             new Room("CLASSROOM 04",21.91f,2.34f,8.6f,9.3f,17.95f,.1f),
-            new Room("CLASSROOM 05",8.59f,5.88f,8.6f,9.3f,4.6f,2.2f),
-            new Room("CLASSROOM 06",-.02f,5.88f,8.7f,9.3f,-3.99f,2.2f),
+            new Room("CLASSROOM 05",8.59f,5.88f,8.6f,9.3f,12.65f,1.8f),
+            new Room("CLASSROOM 06",-.02f,5.88f,8.7f,9.3f,-3.99f,1.8f),
             new Room("STAFF CABIN",-50.17f,-14.36f,6.1f,5.6f,-52.82f,-16.7f)
         };
         [MenuItem("Temporal Contract/Floor/Add Detailed Room Interactions")]
@@ -64,7 +64,9 @@ namespace TemporalContract.Environment.EditorTools
             var legacyFill=binding.transform.Find("Classroom 02 switched fill");if(legacyFill)Object.DestroyImmediate(legacyFill.gameObject);
             for(int i=0;i<Rooms.Length;i++)BuildRoom(Rooms[i],i==1?binding.lightSwitch:null);
             BuildWindow(content);
-            EditorSceneManager.MarkSceneDirty(scene);AssetDatabase.SaveAssets();
+            binding.windowPower=root.GetComponentInChildren<WindowPowerConsole>();binding.vipWindow=root.GetComponentInChildren<SlidingWindow>();
+            binding.GetComponent<TemporalContract.UI.Hud.ProductionPresentationAdapter>().windowPower=binding.windowPower;
+            Physics.SyncTransforms();EditorSceneManager.MarkSceneDirty(scene);AssetDatabase.SaveAssets();
             Debug.Log("ROOM_INTERACTIONS_PREPARED: three detailed chairs, seven room light controls, six fan controls and power-gated VIP sliding glass.");
         }
         private static void BuildChair(MovableCover chair)
@@ -86,6 +88,7 @@ namespace TemporalContract.Environment.EditorTools
         }
         private static void BuildRoom(Room room,WallSwitch existing)
         {
+            Vector3 face=room.control.x>room.center.x?Vector3.left:Vector3.right;
             var group=new GameObject(room.name).transform;group.SetParent(root,false);
             Part("Ceiling",group,room.center+Vector3.up*3.12f,new Vector3(room.size.x,.12f,room.size.y),white);
             var lights=new List<Light>();var emitters=new List<Renderer>();
@@ -98,23 +101,31 @@ namespace TemporalContract.Environment.EditorTools
                 lamp.type=LightType.Point;lamp.intensity=3;lamp.range=8;lamp.color=new Color(1,.9f,.77f);lamp.shadows=LightShadows.None;lights.Add(lamp);
             }
             WallSwitch control=existing;
-            if(!control)control=Control<WallSwitch>(room.name+" light switch",group,room.control,Vector3.right);
+            if(!control)control=Control<WallSwitch>(room.name+" light switch",group,room.control,face);
             else
             {
                 var oldPlate=control.transform.Find("Control plate");if(oldPlate)Object.DestroyImmediate(oldPlate.gameObject);
                 foreach(var renderer in control.GetComponentsInChildren<Renderer>(true))renderer.enabled=false;
                 control.transform.position=room.control;
-                BuildControlVisual(control.transform,Vector3.right);
+                BuildControlVisual(control.transform,face);
             }
             Assign(control,"lights",lights.ToArray());Assign(control,"fixtureRenderers",emitters.ToArray());SetFloat(control,"dimIntensityScale",.035f);
-            Label("LIGHTS",group,room.control+new Vector3(.09f,.28f,0),Vector3.right,.055f);
-            Label(room.name,group,room.control+new Vector3(.09f,.43f,0),Vector3.right,.055f);
+            Label("LIGHTS",group,room.control+face*.09f+Vector3.up*.28f,face,.055f);
+            Label(room.name,group,room.control+face*.09f+Vector3.up*.43f,face,.055f);
             var renderers=Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
             var rotors=renderers.Where(r=>r.name.StartsWith("Source_Blades")&&Mathf.Abs(r.bounds.center.x-room.center.x)<room.size.x*.5f&&Mathf.Abs(r.bounds.center.z-room.center.z)<room.size.y*.5f).Select(r=>r.transform).ToArray();
+            if(rotors.Length==0)
+            {
+                var shaft=Part("Fan downrod",group,room.center+Vector3.up*2.87f,new Vector3(.045f,.3f,.045f),metal);
+                var rotor=Part("Ceiling fan rotor",group,room.center+Vector3.up*2.67f,new Vector3(1.3f,.035f,.12f),wood);
+                Part("Cross blades",rotor.transform,Vector3.zero,new Vector3(.0923f,1,10.833f),wood);
+                Part("Motor hub",group,room.center+Vector3.up*2.73f,new Vector3(.18f,.14f,.18f),metal);
+                rotors=new[]{rotor.transform};
+            }
             if(rotors.Length>0)
             {
-                var fan=Control<NetworkFanControl>(room.name+" fan control",group,room.control+new Vector3(0,0,.4f),Vector3.right);fan.rotors=rotors;
-                Label("FANS",group,fan.transform.position+new Vector3(.09f,.28f,0),Vector3.right,.055f);
+                var fan=Control<NetworkFanControl>(room.name+" fan control",group,room.control+new Vector3(0,0,.4f),face);fan.rotors=rotors;
+                Label("FANS",group,fan.transform.position+face*.09f+Vector3.up*.28f,face,.055f);
             }
         }
         private static T Control<T>(string name,Transform parent,Vector3 position,Vector3 face) where T:NetworkInteractable
