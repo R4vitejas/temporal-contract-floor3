@@ -245,7 +245,7 @@ namespace TemporalContract.Environment.Testing
             finally {player.gameObject.layer=oldLayer;}
             PlaceNear(binding.lightSwitch);
             Check(Request(binding.lightSwitch),"Healthy active actor interaction allowed");
-            var point=binding.lightSwitch.GetComponentsInChildren<Collider>().First(c=>!c.isTrigger).bounds.center;
+            var point=((Transform)new FieldReference(binding.lightSwitch).Reference("interactionPoint")).position;
             var eye=player.GetComponentInChildren<Camera>().transform.position;
             var barrier=GameObject.CreatePrimitive(PrimitiveType.Cube);barrier.name="Regression sight barrier";barrier.transform.position=(eye+point)*.5f;barrier.transform.localScale=new Vector3(.16f,.8f,.16f);Physics.SyncTransforms();
             bool wasOn=binding.lightSwitch.IsOn;

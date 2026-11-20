@@ -105,7 +105,8 @@ namespace TemporalContract.Environment.EditorTools
             else
             {
                 var oldPlate=control.transform.Find("Control plate");if(oldPlate)Object.DestroyImmediate(oldPlate.gameObject);
-                foreach(var renderer in control.GetComponentsInChildren<Renderer>(true))renderer.enabled=false;
+                foreach(var renderer in control.GetComponentsInChildren<Renderer>(true)){renderer.enabled=false;RecordOverride(renderer);}
+                foreach(var collider in control.GetComponentsInChildren<Collider>(true)){collider.enabled=false;RecordOverride(collider);}
                 control.transform.position=room.control;
                 BuildControlVisual(control.transform,face);
             }
@@ -211,6 +212,7 @@ namespace TemporalContract.Environment.EditorTools
             if(emissive){material.EnableKeyword("_EMISSION");material.SetColor("_EmissionColor",color*2);}
             EditorUtility.SetDirty(material);return material;
         }
+        private static void RecordOverride(Object target){if(PrefabUtility.GetCorrespondingObjectFromSource(target)!=null)PrefabUtility.RecordPrefabInstancePropertyModifications(target);}
         private static void Assign(Object target,string field,Object value){var so=new SerializedObject(target);so.FindProperty(field).objectReferenceValue=value;so.ApplyModifiedPropertiesWithoutUndo();}
         private static void Assign(Object target,string field,Object[] values){var so=new SerializedObject(target);var list=so.FindProperty(field);list.arraySize=values.Length;for(int i=0;i<values.Length;i++)list.GetArrayElementAtIndex(i).objectReferenceValue=values[i];so.ApplyModifiedPropertiesWithoutUndo();}
         private static void SetFloat(Object target,string field,float value){var so=new SerializedObject(target);so.FindProperty(field).floatValue=value;so.ApplyModifiedPropertiesWithoutUndo();}
