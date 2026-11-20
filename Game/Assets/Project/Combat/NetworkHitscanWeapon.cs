@@ -35,6 +35,7 @@ namespace TemporalContract.Combat
         public int MagazineSize => magazineSize;
         public int Ammunition => ammunition.Value;
         public bool IsReloading => reloading.Value;
+        public float ReloadDuration => reloadDuration;
         public double ReloadSecondsRemaining => reloading.Value && NetworkManager != null
             ? Math.Max(0d, reloadEndsAt.Value - NetworkManager.ServerTime.Time) : 0d;
         public event Action StateChanged;

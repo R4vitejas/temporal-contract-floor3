@@ -41,6 +41,7 @@ namespace TemporalContract.UI.Hud
         [Header("Lobby")]
         [SerializeField] private Text lobbyPlayersText;
         [SerializeField] private Text lobbyReadyText;
+        [SerializeField] private Text connectionText;
         [SerializeField] private Button readyButton;
         [SerializeField] private Text readyButtonText;
         [SerializeField] private Button startButton;
@@ -51,6 +52,7 @@ namespace TemporalContract.UI.Hud
         [SerializeField] private Text healthText;
         [SerializeField] private Image healthFill;
         [SerializeField] private Text ammoText;
+        [SerializeField] private Image reloadFill;
         [SerializeField] private Text timerText;
         [SerializeField] private Text roundText;
         [SerializeField] private Text objectiveText;
@@ -355,6 +357,7 @@ namespace TemporalContract.UI.Hud
         private void RenderLobby(PresentationState state)
         {
             ShowOnly(lobbyPanel);
+            if(connectionText)connectionText.text=state.statusMessage;
             SetText(lobbyPlayersText, $"Players: {state.connectedPlayers}/2");
             SetText(lobbyReadyText,
                 $"You: {(state.localReady ? "READY" : "not ready")}    Opponent: {(state.remoteReady ? "READY" : "not ready")}");
@@ -379,10 +382,13 @@ namespace TemporalContract.UI.Hud
             }
 
             SetText(ammoText, state.reloading ? "RELOADING" : $"{Mathf.Max(0, state.ammo)}/{Mathf.Max(0, state.magazineSize)}");
+            if(reloadFill){reloadFill.gameObject.SetActive(state.reloading);reloadFill.fillAmount=state.reloadProgress;}
+            if(timerText)timerText.color=state.timeRemainingSeconds<=15?new Color(1,.65f,.26f):Color.white;
             SetText(timerText, FormatTime(state.timeRemainingSeconds));
             SetText(roundText, state.isPractice ? "SOLO PRACTICE" : state.roundNumber > 0 ? $"Round {state.roundNumber}/2" : string.Empty);
             SetText(objectiveText, Fallback(state.objective, string.Empty));
             SetText(keycardText, !state.keycardKnown ? string.Empty : state.hasKeycard ? "Keycard: HELD" : "Keycard: not held");
+            if(keycardText)keycardText.color=state.hasKeycard?new Color(1,.78f,.35f):new Color(.65f,.72f,.78f);
             if (defeatedOverlay != null)
             {
                 defeatedOverlay.SetActive(!state.alive);

@@ -168,6 +168,7 @@ namespace TemporalContract.Environment.EditorTools
                 damage.GetComponent<Image>().color=new Color(.8f,0,0,.35f);damage.GetComponent<Image>().raycastTarget=false;
                 damage.GetComponent<CanvasGroup>().alpha=0;damage.GetComponent<CanvasGroup>().blocksRaycasts=false;
                 Set(hooks,"hitMarker",hit.GetComponent<CanvasGroup>());Set(hooks,"damageFlash",damage.GetComponent<CanvasGroup>());
+                GamePolishBuilder.Apply(scene);
                 Physics.SyncTransforms();
                 VerifyPlacement(scene,bindings);
                 ValidateMain(scene);
@@ -242,7 +243,10 @@ namespace TemporalContract.Environment.EditorTools
             foreach(var behaviour in Components<MonoBehaviour>(scene))
                 if(behaviour.GetType().FullName.Contains(".Testing.") || behaviour is TemporalContract.Combat.NetworkCombatTestBootstrap)
                     throw new InvalidOperationException("Test component in Main: "+behaviour.GetType().Name);
-            if(Components<AudioListener>(scene).Any(a=>a.enabled))throw new InvalidOperationException("Main must use the spawned owner's listener.");
+            var audio=Components<LocalAudioDirector>(scene);
+            var listeners=Components<AudioListener>(scene).Where(a=>a.enabled&&a.gameObject.activeInHierarchy).ToArray();
+            if(audio.Length!=1||listeners.Length!=1||listeners[0]!=audio[0].menuListener)
+                throw new InvalidOperationException("Main must have exactly one explicitly owned menu listener before a player spawns.");
             var networkObjects=Components<NetworkObject>(scene);
             var hashes=networkObjects.Select(n=>new SerializedObject(n).FindProperty("GlobalObjectIdHash").longValue).ToArray();
             // Fresh scene objects receive their scene hashes when saved, checked again on the saved scene.
@@ -263,7 +267,8 @@ namespace TemporalContract.Environment.EditorTools
                 var expectedCollision=reference.GetComponentsInChildren<Transform>(true).Single(t=>t.name=="Baked floor collision");
                 foreach(string path in new[]{MainPath,ShowcasePath})
                 {
-                    var scene=EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);
+                    var scene=SceneManager.GetSceneByPath(path);bool wasLoaded=scene.IsValid()&&scene.isLoaded;
+                    if(!wasLoaded)scene=EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);
                     try
                     {
                         if(path==MainPath)ValidateMain(scene);else VerifyMeshes(scene);
@@ -291,7 +296,7 @@ namespace TemporalContract.Environment.EditorTools
                                 throw new InvalidOperationException("Main must use its non-default runtime registration list.");
                         }
                     }
-                    finally {SceneManager.SetActiveScene(original);EditorSceneManager.CloseScene(scene,true);}
+                    finally {SceneManager.SetActiveScene(original);if(!wasLoaded)EditorSceneManager.CloseScene(scene,true);}
                 }
                 Debug.Log("FULL_FLOOR_SAVED_SCENES_PASS: all 1767 source mesh/material identities retained; Main source bounds match; static collision bake unchanged in Main/showcase; unique network hashes; six boards; root session; no production test scripts/listeners.");
             }

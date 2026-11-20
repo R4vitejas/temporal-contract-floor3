@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 374464509889713056}
   - component: {fileID: 3199070270710286252}
   - component: {fileID: 3349943974582782135}
+  - component: {fileID: 5478545491699307717}
   m_Layer: 0
   m_Name: Vip
   m_TagString: Untagged
@@ -44,7 +45,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 0
   InScenePlacedSourceGlobalObjectIdHash: 0
@@ -71,10 +72,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ffbded2207a14ff43b642a4364a25d54, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Combat.VipHealth
   ShowTopMostFoldoutHeaderGroup: 1
   maximumHealth: 100
+--- !u!114 &5478545491699307717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512246040915382390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e71bd07a04cc281f8aa85b4a150fc64b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Combat.VipObjectiveMarker
 --- !u!1 &5268700146844130870
 GameObject:
   m_ObjectHideFlags: 0

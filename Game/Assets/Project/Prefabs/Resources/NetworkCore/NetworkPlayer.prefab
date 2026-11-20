@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 5043584142708375451}
   - component: {fileID: 4103810118827179824}
   - component: {fileID: 8203105326770320730}
+  - component: {fileID: 7364495390897452189}
+  - component: {fileID: 4367187414150725858}
   m_Layer: 0
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -208,6 +210,30 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &7364495390897452189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896976078723853523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 546ac200661775457ad794354b6b077a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Feedback.PlayerFootsteps
+--- !u!114 &4367187414150725858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896976078723853523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e1202e7ba207299da93dc19dbdb0f24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Players.PlayerAppearance
 --- !u!1 &6660808716177593931
 GameObject:
   m_ObjectHideFlags: 0
@@ -313,8 +339,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a35f7f2a0f8700972b59877e9c5eec37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporalContract.Players.LocalWeaponView
-  bodyMaterial: {fileID: 2100000, guid: d73d0fa9c1e524c0b9843d1556cf4df3, type: 2}
-  flashMaterial: {fileID: 2100000, guid: 21e77368643b6344c8d8d42859a91027, type: 2}
+  bodyMaterial: {fileID: 2100000, guid: 3b2784771b96836008c00bf059c927dd, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 67f9479612da86dec8f6ee469a9a9aaa, type: 2}
+  accentMaterial: {fileID: 2100000, guid: c5ad9bb929eae7bb194ae88eedd9ce38, type: 2}
 --- !u!1 &7673878128459353206
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,8 +369,8 @@ Transform:
   m_GameObject: {fileID: 7673878128459353206}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0.9, z: 0}
+  m_LocalScale: {x: 0.6, y: 0.9, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2293267563137707192}

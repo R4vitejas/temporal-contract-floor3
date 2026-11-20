@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using TemporalContract.Combat;
@@ -40,10 +41,14 @@ namespace TemporalContract.Networking
         private bool menuVisible = true;
         private bool observedMatchStarted;
         private readonly HashSet<ulong> connectedSessionClients = new HashSet<ulong>();
+        private string localAddress;
         public string StatusMessage => status;
         public string ErrorMessage => errorMessage;
         public bool ExternalPresentation { get; set; }
         public bool IsMenuVisible => menuVisible;
+        public string ConnectionAddress => networkManager!=null&&networkManager.IsServer?(localAddress??(localAddress=GetLocalIpv4())):joinAddress;
+        public string ConnectionLabel => ConnectionAddress+":"+portText;
+        public void SetMenuVisible(bool visible){menuVisible=visible;SetLocalPlayerInputCaptured(visible);}
         public void ConfigureEndpoint(string address, ushort port)
         {
             if(networkManager!=null&&networkManager.IsListening)return;
@@ -186,7 +191,8 @@ namespace TemporalContract.Networking
 
         private void RegisterNetworkPrefab(GameObject prefab)
         {
-            if (prefab != null && !networkManager.NetworkConfig.Prefabs.Contains(prefab))
+            if (prefab != null && !networkManager.NetworkConfig.Prefabs.Contains(prefab)
+                && !networkManager.NetworkConfig.Prefabs.NetworkPrefabsLists.Any(list=>list!=null&&list.Contains(prefab)))
             {
                 networkManager.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = prefab });
             }
@@ -281,7 +287,7 @@ namespace TemporalContract.Networking
                 SetLocalPlayerInputCaptured(false);
             }
 
-            if (matchStarted && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+            if (!ExternalPresentation && matchStarted && Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
             {
                 menuVisible = !menuVisible;
                 SetLocalPlayerInputCaptured(menuVisible);
@@ -291,7 +297,7 @@ namespace TemporalContract.Networking
         private void OnGUI()
         {
             bool matchStarted = LobbyNetworkState.Instance != null && LobbyNetworkState.Instance.MatchStarted;
-            if(ExternalPresentation && (!matchStarted || !menuVisible))return;
+            if(ExternalPresentation)return;
 
             if (matchStarted && !menuVisible)
             {
@@ -319,6 +325,12 @@ namespace TemporalContract.Networking
         {
             try
             {
+                foreach(var adapter in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(n=>n.OperationalStatus==System.Net.NetworkInformation.OperationalStatus.Up&&n.NetworkInterfaceType!=System.Net.NetworkInformation.NetworkInterfaceType.Loopback&&n.NetworkInterfaceType!=System.Net.NetworkInformation.NetworkInterfaceType.Tunnel)
+                    .Where(n=>!new[]{"docker","veth","virbr","br-","vEthernet"}.Any(prefix=>n.Name.StartsWith(prefix,System.StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(n=>n.NetworkInterfaceType==System.Net.NetworkInformation.NetworkInterfaceType.Wireless80211?0:n.NetworkInterfaceType==System.Net.NetworkInformation.NetworkInterfaceType.Ethernet?1:2))
+                    foreach(var address in adapter.GetIPProperties().UnicastAddresses)
+                        if(address.Address.AddressFamily==AddressFamily.InterNetwork&&!IPAddress.IsLoopback(address.Address))return address.Address.ToString();
                 foreach (IPAddress address in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
                 {
                     if (address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
@@ -331,6 +343,7 @@ namespace TemporalContract.Networking
             {
                 // The session menu remains usable offline; the host can check its adapter settings.
             }
+            catch(System.Net.NetworkInformation.NetworkInformationException){}
             return "LAN IPv4 unavailable";
         }
 

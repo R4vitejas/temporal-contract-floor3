@@ -33,6 +33,7 @@ namespace TemporalContract.UI.Board
         private bool wasListening;
 
         public bool IsOpen { get; private set; }
+        public int LastClosedFrame {get;private set;}=-1;
         public int SelectedIndex { get; private set; } = -1;
         public int RegionCount => regionImages.Count;
         public FloorMapLayout Layout => layout;
@@ -153,6 +154,7 @@ namespace TemporalContract.UI.Board
             }
 
             IsOpen = false;
+            LastClosedFrame=Time.frameCount;
             capture?.SetCaptured(this, false);
             if (restoreCursor)
             {

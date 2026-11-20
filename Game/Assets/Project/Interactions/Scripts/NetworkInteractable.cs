@@ -88,7 +88,7 @@ namespace TemporalContract.Interactions
         public bool TryHandleInteraction(in InteractionRequest request)
         {
             pendingDenyReason = "rejected";
-            if (!IsServer || !IsSpawned)
+            if (!IsServer || !IsSpawned || !isActiveAndEnabled)
             {
                 return Deny("not host or not spawned");
             }
@@ -115,8 +115,30 @@ namespace TemporalContract.Interactions
                 return Deny("out of range");
             }
 
+            if(RequiresVisibleApproach&&!HasVisibleApproach(player))return Deny("interaction blocked by geometry");
+
             return ExecuteOnServer(request, player);
         }
+        protected virtual bool RequiresVisibleApproach=>true;
+        private bool HasVisibleApproach(NetworkObject player)
+        {
+            Vector3 target=InteractionOrigin;
+            if(interactionPoint==null)
+                foreach(var collider in GetComponentsInChildren<Collider>())
+                    if(collider.enabled&&!collider.isTrigger){target=collider.bounds.center;break;}
+            var camera=player.GetComponentInChildren<Camera>(true);
+            Vector3 eye=camera?camera.transform.position:player.transform.position+Vector3.up*1.62f;
+            Vector3 delta=target-eye;if(delta.sqrMagnitude<.0001f)return true;
+            var hits=Physics.RaycastAll(eye,delta.normalized,delta.magnitude,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+            System.Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));
+            foreach(var hit in hits)
+            {
+                if(hit.collider.GetComponentInParent<NetworkObject>()==player)continue;
+                return IsTargetCollider(hit.collider);
+            }
+            return true;
+        }
+        protected virtual bool IsTargetCollider(Collider collider)=>collider.transform.IsChildOf(transform);
 
         /// <summary>Validate role/state and mutate replicated state. Called on the host after range checks pass.</summary>
         protected abstract bool ExecuteOnServer(in InteractionRequest request, NetworkObject player);

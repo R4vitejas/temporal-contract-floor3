@@ -22,6 +22,7 @@ namespace TemporalContract.UI.Hud
         private PresentationState previous;
         private NetworkFpsPlayer capturedPlayer;
         private SessionPhase capturedPhase;
+        private bool capturedAlive;
         private float nextRefresh;
         private bool hasPrevious;
 
@@ -39,12 +40,12 @@ namespace TemporalContract.UI.Hud
             nextRefresh=Time.unscaledTime+.05f;
             TryGetState(out var state);
             var player=NetworkFpsPlayer.LocalOwner;
-            if(player!=capturedPlayer || !hasPrevious || state.phase!=capturedPhase)
+            if(player!=capturedPlayer || !hasPrevious || state.phase!=capturedPhase || state.alive!=capturedAlive)
             {
                 if(capturedPlayer && capturedPlayer!=player)capturedPlayer.SetGameplayInputCaptured(this,false);
-                capturedPlayer=player;capturedPhase=state.phase;
-                if(state.phase!=SessionPhase.ActiveRound && map)map.ForceClose();
-                if(player)player.SetGameplayInputCaptured(this,state.phase!=SessionPhase.ActiveRound);
+                capturedPlayer=player;capturedPhase=state.phase;capturedAlive=state.alive;
+                if((state.phase!=SessionPhase.ActiveRound||!state.alive) && map)map.ForceClose();
+                if(player)player.SetGameplayInputCaptured(this,state.phase!=SessionPhase.ActiveRound||!state.alive);
             }
             if(!hasPrevious || !state.Equals(previous)) {previous=state;hasPrevious=true;StateChanged?.Invoke();}
         }
@@ -65,6 +66,7 @@ namespace TemporalContract.UI.Hud
                 localReady=lobby&&lobby.IsReady(local),remoteReady=lobby&&remote&&lobby.IsReady(remote.OwnerClientId),
                 alive=health&&health.IsAlive,health=health?health.CurrentHealth:0,maxHealth=health?health.MaximumHealth:100,
                 ammo=weapon?weapon.Ammunition:0,magazineSize=weapon?weapon.MagazineSize:12,reloading=weapon&&weapon.IsReloading,
+                reloadProgress=weapon&&weapon.IsReloading?Mathf.Clamp01(1-(float)weapon.ReloadSecondsRemaining/weapon.ReloadDuration):0,
                 isPractice=round&&round.IsPractice, timeRemainingSeconds=round?(float)Math.Ceiling(round.TimeRemaining):-1,
                 roundNumber=round?round.RoundNumber:0, keycardKnown=keycard!=null,hasKeycard=keycard&&keycard.IsHeldBy(local),
                 role=round&&lobby&&lobby.MatchStarted?(round.AttackerClientId==local?PlayerRole.Attacker:PlayerRole.Defender):PlayerRole.None,
@@ -83,6 +85,11 @@ namespace TemporalContract.UI.Hud
                         round.Phase==MatchPhase.MatchResult?SessionPhase.MatchEnd:SessionPhase.Lobby;
             }
             if(state.isPractice)state.matchResult=round&&round.LastRoundOutcome==RoundOutcome.AttackersWon?"PRACTICE COMPLETE — VIP ELIMINATED":"PRACTICE ENDED";
+            else if(round&&round.Phase==MatchPhase.MatchResult)
+                state.matchResult=round.MatchWinnerClientId==ulong.MaxValue?"MATCH DRAW":round.MatchWinnerClientId==local?"VICTORY":"DEFEAT";
+            if(round&&round.Phase==MatchPhase.RoundResult&&!state.isPractice)
+                state.roundResult=((state.role==PlayerRole.Attacker)==(round.LastRoundOutcome==RoundOutcome.AttackersWon))?"ROUND WON":"ROUND LOST";
+            if(state.phase==SessionPhase.Lobby)state.statusMessage=(state.isHost?"HOST  ":"CONNECTED  ")+session.ConnectionLabel;
             return true;
         }
         public void Host(ushort port) {session.ConfigureEndpoint("127.0.0.1",port);session.StartHost();nextRefresh=0;}
